@@ -287,6 +287,8 @@ function NudgePointApp() {
   const [windowDurationSec] = useState(90);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showFlightSim] = useState(true);
+  const [alertThreshold, setAlertThreshold] = useState(15); // % friction to trigger amber alert
+
 
   const [students] = useState(SIMULATION_ROSTER);
   const [pulses, setPulses] = useState([
@@ -541,14 +543,14 @@ function NudgePointApp() {
     : 0;
 
   const radarStatus = useMemo(() => {
-    if (frictionRate >= 30) {
+    if (frictionRate >= alertThreshold * 2) {
       return { level: 'red', label: 'Derailment Risk', icon: '🔴', color: '#C84B42', pulseClass: 'red-pulse-active' };
     }
-    if (frictionRate >= 15) {
+    if (frictionRate >= alertThreshold) {
       return { level: 'amber', label: 'Amber Pulse Active', icon: '🟡', color: '#C4761E', pulseClass: 'amber-pulse-active' };
     }
     return { level: 'neutral', label: 'Classroom in Flow', icon: '🟢', color: '#2B7A4B', pulseClass: '' };
-  }, [frictionRate]);
+  }, [frictionRate, alertThreshold]);
 
   useEffect(() => {
     if (radarStatus.level === 'amber' || radarStatus.level === 'red') {
@@ -889,6 +891,8 @@ function NudgePointApp() {
                 questions={questions}
                 onMarkAnswered={(id) => setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, answered: true } : q))}
                 onToggleProject={(id) => setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, projected: !q.projected } : q))}
+                alertThreshold={alertThreshold}
+                onAlertThresholdChange={setAlertThreshold}
               />
             </div>
 
@@ -1046,6 +1050,8 @@ function NudgePointApp() {
                   setQuestions((prev) => prev.map((item) => item.id === id ? { ...item, projected: nextVal } : item));
                   broadcast('PROJECT_QUESTION', { id, projected: nextVal });
                 }}
+                alertThreshold={alertThreshold}
+                onAlertThresholdChange={setAlertThreshold}
               />
             </div>
           )
@@ -1346,6 +1352,8 @@ function GalleryPodiumComponent({
   questions,
   onMarkAnswered,
   onToggleProject,
+  alertThreshold,
+  onAlertThresholdChange,
 }) {
   const [activeSubTab, setActiveSubTab] = useState('radar');
 
@@ -1430,10 +1438,32 @@ function GalleryPodiumComponent({
             );
           })}
         </div>
+
+        {/* Alert Threshold Control */}
+        <div className="pt-4 border-t border-[#EAE6DF] flex flex-wrap items-center gap-4">
+          <label htmlFor="alert-threshold-slider" className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#7A7E89] shrink-0">
+            Alert Threshold
+          </label>
+          <input
+            id="alert-threshold-slider"
+            type="range"
+            min={5}
+            max={40}
+            step={5}
+            value={alertThreshold}
+            onChange={(e) => onAlertThresholdChange(Number(e.target.value))}
+            className="flex-1 min-w-[120px] accent-[#C4761E] cursor-pointer"
+            aria-label={`Alert threshold: ${alertThreshold}% for amber, ${alertThreshold * 2}% for red`}
+          />
+          <div className="flex items-center gap-3 text-[10px] font-mono shrink-0">
+            <span className="text-[#C4761E] font-semibold">🟡 {alertThreshold}%</span>
+            <span className="text-[#C84B42] font-semibold">🔴 {alertThreshold * 2}%</span>
+          </div>
+        </div>
       </div>
 
       {/* 2. SUB NAVIGATION PILLS */}
-      <div className="subnav-bar">
+      <div className="subnav-bar" role="tablist" aria-label="Podium dashboard sections">
         {[
           { id: 'radar', label: 'MILESTONES' },
           { id: 'bridges', label: `BRIDGE PROMPTS (${activeBridges.length})` },
@@ -1444,6 +1474,10 @@ function GalleryPodiumComponent({
             key={sTab.id}
             onClick={() => setActiveSubTab(sTab.id)}
             className={`subnav-tab-btn ${activeSubTab === sTab.id ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeSubTab === sTab.id}
+            aria-controls={`panel-${sTab.id}`}
+            id={`tab-${sTab.id}`}
           >
             {sTab.label}
           </button>
@@ -1452,7 +1486,7 @@ function GalleryPodiumComponent({
 
       {/* 3. MILESTONES TAB */}
       {activeSubTab === 'radar' && (
-        <div className="gallery-panel p-6 flex flex-col gap-3">
+        <div className="gallery-panel p-6 flex flex-col gap-3" role="tabpanel" id="panel-radar" aria-labelledby="tab-radar">
           <div className="flex items-center justify-between mb-3 border-b border-[#EAE6DF] pb-2">
             <span className="font-serif text-lg text-[#111215]">Lecture Milestones</span>
             <span className="text-xs font-mono text-[#7A7E89] uppercase tracking-wider">ACTIVE: {activeTopic}</span>
@@ -1464,7 +1498,12 @@ function GalleryPodiumComponent({
                 <li
                   key={t.id}
                   onClick={() => onSelectTopic(t.title)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTopic(t.title); } }}
                   className={`milestone-item ${isActive ? 'active' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isActive}
+                  aria-label={`Select milestone: ${t.title} at ${t.timestamp}`}
                 >
                   <div className="flex items-center gap-4">
                     <span className="milestone-time">{t.timestamp}</span>
@@ -1688,7 +1727,7 @@ function GalleryStudentComponent({
 
       {/* Main Pulse Surface */}
       {subTab === 'pulse' && (
-        <div className="my-auto flex flex-col items-center text-center py-4">
+        <div className="my-auto flex flex-col items-center text-center py-4" role="tabpanel" id="student-panel-pulse" aria-labelledby="student-tab-pulse">
           
           {/* SCULPTURAL CIRCULAR HERO BUTTON */}
           <button
@@ -1740,7 +1779,7 @@ function GalleryStudentComponent({
 
       {/* Backchannel Question View */}
       {subTab === 'question' && (
-        <div className="my-auto flex flex-col gap-4 py-2">
+        <div className="my-auto flex flex-col gap-4 py-2" role="tabpanel" id="student-panel-question" aria-labelledby="student-tab-question">
           <form onSubmit={handleAsk} className="flex flex-col gap-2">
             <input
               type="text"
@@ -1779,7 +1818,7 @@ function GalleryStudentComponent({
 
       {/* Private Notes View */}
       {subTab === 'notes' && (
-        <div className="my-auto flex flex-col gap-3 py-2 max-h-72 overflow-y-auto">
+        <div className="my-auto flex flex-col gap-3 py-2 max-h-72 overflow-y-auto" role="tabpanel" id="student-panel-notes" aria-labelledby="student-tab-notes">
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89]">
             PERSONAL LOG
           </div>
@@ -1796,22 +1835,34 @@ function GalleryStudentComponent({
       )}
 
       {/* Bottom Nav Segment */}
-      <div className="pt-3 border-t border-[#DDD7CB] flex items-center justify-around text-[10px] font-mono tracking-[0.2em] uppercase">
+      <div className="pt-3 border-t border-[#DDD7CB] flex items-center justify-around text-[10px] font-mono tracking-[0.2em] uppercase" role="tablist" aria-label="Student view tabs">
         <button
           onClick={() => setSubTab('pulse')}
           className={`transition ${subTab === 'pulse' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
+          role="tab"
+          aria-selected={subTab === 'pulse'}
+          aria-controls="student-panel-pulse"
+          id="student-tab-pulse"
         >
           PULSE
         </button>
         <button
           onClick={() => setSubTab('question')}
           className={`transition ${subTab === 'question' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
+          role="tab"
+          aria-selected={subTab === 'question'}
+          aria-controls="student-panel-question"
+          id="student-tab-question"
         >
           ASK
         </button>
         <button
           onClick={() => setSubTab('notes')}
           className={`transition ${subTab === 'notes' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
+          role="tab"
+          aria-selected={subTab === 'notes'}
+          aria-controls="student-panel-notes"
+          id="student-tab-notes"
         >
           LOG ({notes.length})
         </button>
@@ -1953,9 +2004,47 @@ function GalleryAnalyticsComponent({
   totalStudents,
 }) {
   const [downloaded, setDownloaded] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+
+  // Fetch live analytics from the server REST endpoint
+  useEffect(() => {
+    setAnalyticsLoading(true);
+    fetch(`/api/sessions/${roomCode}/analytics`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        setAnalyticsData(data);
+        setAnalyticsLoading(false);
+      })
+      .catch(() => {
+        setAnalyticsLoading(false);
+      });
+  }, [roomCode]);
 
   const total = pulses.length;
   const stepCount = pulses.filter((p) => p.tag === 'step').length;
+
+  // Derived display values: prefer server data, fall back to in-memory
+  const totalPulsesDisplay = analyticsData ? analyticsData.totalPulses : total;
+  const hardestTopicDisplay = analyticsData ? analyticsData.hardestTopic : (
+    topics.reduce((best, t) => {
+      const count = pulses.filter((p) => p.topic === t.title).length;
+      return count > (best.count || 0) ? { title: t.title, count } : best;
+    }, {}).title || 'N/A'
+  );
+  const dominantTagDisplay = analyticsData ? analyticsData.dominantFactor : (
+    total > 0
+      ? Object.entries(
+          pulses.reduce((acc, p) => { acc[p.tag] = (acc[p.tag] || 0) + 1; return acc; }, {})
+        ).sort((a, b) => b[1] - a[1])[0]?.[0] || 'step'
+      : 'step'
+  );
+  const dominantPct = totalPulsesDisplay > 0
+    ? Math.round(((analyticsData?.tagDistribution?.[dominantTagDisplay] || stepCount) / totalPulsesDisplay) * 100)
+    : 0;
+  const interventionsCountDisplay = analyticsData ? analyticsData.totalInterventions : interventions.length;
+  // Flow index: % of 90s window where no friction signals fired (rough proxy)
+  const flowIndex = totalStudents > 0 ? Math.max(0, Math.round(100 - (total / Math.max(1, totalStudents)) * 100)) : 100;
 
   const handleExport = () => {
     const md = `# NudgePoint Debrief Report — ${courseName} (Room ${roomCode})
@@ -1987,6 +2076,41 @@ ${questions.map((q) => `- [${q.upvotes} votes] ${q.text}`).join('\n')}
     setTimeout(() => setDownloaded(false), 2000);
   };
 
+  const handleExportCSV = () => {
+    // Header row
+    const rows = [
+      ['timestamp_iso', 'topic', 'tag', 'student_id', 'room'].join(','),
+      ...pulses.map((p) => [
+        new Date(p.timestamp).toISOString(),
+        `"${(p.topic || '').replace(/"/g, '""')}"`,
+        p.tag || '',
+        p.studentId || '',
+        roomCode,
+      ].join(','))
+    ];
+    // Questions section
+    rows.push('');
+    rows.push(['question_id', 'text', 'upvotes', 'timestamp_iso'].join(','));
+    questions.forEach((q) => {
+      rows.push([
+        q.id,
+        `"${(q.text || '').replace(/"/g, '""')}"`,
+        q.upvotes,
+        new Date(q.timestamp).toISOString(),
+      ].join(','));
+    });
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NudgePoint_${roomCode}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
       
@@ -2000,34 +2124,55 @@ ${questions.map((q) => `- [${q.upvotes} votes] ${q.text}`).join('\n')}
           </h2>
         </div>
 
-        <button
-          onClick={handleExport}
-          className="btn-gallery-pill-black !py-2 !px-6 text-[10px]"
-        >
-          {downloaded ? 'DOWNLOADED MARKDOWN' : 'EXPORT MARKDOWN'}
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={handleExportCSV}
+            className="btn-gallery-pill-outline !py-2 !px-6 text-[10px]"
+            aria-label="Export session data as CSV spreadsheet"
+          >
+            EXPORT CSV
+          </button>
+          <button
+            onClick={handleExport}
+            className="btn-gallery-pill-black !py-2 !px-6 text-[10px]"
+            aria-label="Export session summary as Markdown report"
+          >
+            {downloaded ? 'DOWNLOADED MARKDOWN' : 'EXPORT MARKDOWN'}
+          </button>
+        </div>
       </div>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Flow Index', val: '86%', sub: 'Lecture in flow' },
-          { label: 'Peak Friction', val: 'Topic 3', sub: 'Minute 18:40' },
-          { label: 'Primary Cause', val: 'Step Transition', sub: '58% of pulses' },
-          { label: 'Interventions', val: `${interventions.length} Deployed`, sub: 'Bridges used' },
-        ].map((m, idx) => (
-          <div key={idx} className="gallery-panel p-6">
-            <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#7A7E89] block">
-              {m.label}
-            </span>
-            <div className="font-serif text-2xl font-normal text-[#111215] mt-1">
-              {m.val}
+        {analyticsLoading ? (
+          // Loading shimmer
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="gallery-panel p-6 animate-pulse">
+              <div className="h-2 w-16 bg-[#DDD7CB] rounded mb-3" />
+              <div className="h-6 w-24 bg-[#DDD7CB] rounded mb-1" />
+              <div className="h-2 w-20 bg-[#DDD7CB] rounded" />
             </div>
-            <span className="text-[10px] font-mono text-[#7A7E89] block mt-0.5">
-              {m.sub}
-            </span>
-          </div>
-        ))}
+          ))
+        ) : (
+          [
+            { label: 'Flow Index', val: `${flowIndex}%`, sub: 'Est. lecture flow' },
+            { label: 'Peak Friction', val: hardestTopicDisplay.length > 20 ? hardestTopicDisplay.slice(0, 20) + '…' : (hardestTopicDisplay || 'N/A'), sub: 'Highest friction topic' },
+            { label: 'Primary Cause', val: dominantTagDisplay ? dominantTagDisplay.charAt(0).toUpperCase() + dominantTagDisplay.slice(1) : 'N/A', sub: `${dominantPct}% of pulses` },
+            { label: 'Interventions', val: `${interventionsCountDisplay} Deployed`, sub: 'Bridges used' },
+          ].map((m, idx) => (
+            <div key={idx} className="gallery-panel p-6">
+              <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#7A7E89] block">
+                {m.label}
+              </span>
+              <div className="font-serif text-2xl font-normal text-[#111215] mt-1">
+                {m.val}
+              </div>
+              <span className="text-[10px] font-mono text-[#7A7E89] block mt-0.5">
+                {m.sub}
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Timeline Breakdown */}
@@ -2120,8 +2265,12 @@ function GallerySparkline({ pulses, windowDurationSec, statusColor }) {
   }, [pulses, windowDurationSec, statusColor]);
 
   return (
-    <div className="w-full h-12 pt-1">
-      <canvas ref={canvasRef} width={600} height={48} className="w-full h-full block" />
+    <div
+      className="w-full h-12 pt-1"
+      role="img"
+      aria-label={`Friction velocity sparkline: ${pulses.length} pulse events recorded in the last ${windowDurationSec} seconds`}
+    >
+      <canvas ref={canvasRef} width={600} height={48} className="w-full h-full block" aria-hidden="true" />
     </div>
   );
 }
