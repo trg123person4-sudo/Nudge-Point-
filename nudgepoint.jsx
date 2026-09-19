@@ -1146,6 +1146,354 @@ function StudentLoginComponent({
 }
 
 // ----------------------------------------------------------------------------
+// 2D. CLASS TIMINGS COMPONENT (Schedule, Milestone Timeline & Office Hours)
+// ----------------------------------------------------------------------------
+function ClassTimingsComponent({ roomCode, courseName, activeTopic, onBackToPulse }) {
+  return (
+    <div className="flex flex-col gap-6 font-sans">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#DDD7CB]">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#7A7E89]">
+              SCHEDULE & TIMINGS • ROOM {roomCode}
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold animate-pulse">
+              ● LIVE SESSION
+            </span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111215] tracking-tight">
+            Class Timetable & Milestone Schedule
+          </h2>
+          <p className="text-xs text-[#575B66] mt-0.5">
+            {courseName} &nbsp;•&nbsp; Section 04 &nbsp;•&nbsp; Science Center Hall 101
+          </p>
+        </div>
+        {onBackToPulse && (
+          <button
+            type="button"
+            onClick={onBackToPulse}
+            className="btn-gallery-pill-black !py-2 !px-4 text-xs font-mono"
+          >
+            ← Back to Personal Pulse
+          </button>
+        )}
+      </div>
+
+      {/* Live Session Progress Clock Banner */}
+      <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#DDD7CB] shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-[#1E262B] text-amber-400 flex items-center justify-center text-xl font-mono shadow-xs">
+              ⏱️
+            </div>
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider text-[#7A7E89]">
+                Today's Lecture Pacing (90-Minute Block)
+              </div>
+              <div className="text-sm font-semibold text-[#111215]">
+                10:00 AM – 11:30 AM EST &nbsp;•&nbsp; <span className="text-emerald-700 font-mono">35 mins elapsed (55 mins remaining)</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-left sm:text-right">
+            <span className="text-[10px] font-mono uppercase text-[#7A7E89] block">Current Lecture Milestone:</span>
+            <div className="text-xs font-semibold text-[#B45309] font-serif">{activeTopic}</div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full h-2.5 rounded-full bg-[#E5DFD5] overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-[#1D4E89] to-[#059669] rounded-full" style={{ width: '39%' }}></div>
+        </div>
+        <div className="flex justify-between items-center text-[10px] font-mono text-[#7A7E89] mt-2">
+          <span>10:00 AM (Start)</span>
+          <span className="text-emerald-700 font-semibold">10:18 AM (Conjugates)</span>
+          <span>10:45 AM (Trig Chain)</span>
+          <span>11:30 AM (Dismissal)</span>
+        </div>
+      </div>
+
+      {/* Grid: Topic Milestones + Office Hours / Key Dates */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left 7 cols: Topic Timeline Breakdown */}
+        <div className="lg:col-span-7 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89]">
+              TODAY'S LECTURE MILESTONES
+            </span>
+            <span className="text-[10px] font-mono text-[#7A7E89]">5 Topics Planned</span>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            {[
+              { id: 'm1', time: '10:00 – 10:07', duration: '7 min', title: '1. Review: Slope & Tangent Lines', status: 'completed', desc: 'Recap of secant line limits and algebraic difference quotients.' },
+              { id: 'm2', time: '10:07 – 10:18', duration: '11 min', title: '2. Formal Definition of the Derivative', status: 'completed', desc: 'Establishing f\'(x) = lim h→0 [f(x+h) - f(x)]/h.' },
+              { id: 'm3', time: '10:18 – 10:31', duration: '13 min', title: '3. Step 3: Algebraic Conjugate Substitution', status: 'active', desc: 'Conjugate expansion [√(x+h) + √x] and eliminating h in denominator.' },
+              { id: 'm4', time: '10:31 – 10:45', duration: '14 min', title: '4. Chain Rule with Trigonometric Functions', status: 'upcoming', desc: 'Composing outer derivative with inner rate of change: d/dx[sin(g(x))].' },
+              { id: 'm5', time: '10:45 – 11:30', duration: '45 min', title: '5. Real-World Velocity Application & Synthesis', status: 'upcoming', desc: 'Projectile trajectory velocity vectors and open backchannel Q&A.' }
+            ].map((m) => (
+              <div
+                key={m.id}
+                className={`p-3.5 rounded-xl border transition ${
+                  m.status === 'active'
+                    ? 'bg-[#FEF7EE] border-[#EAD1A8] shadow-xs'
+                    : m.status === 'completed'
+                    ? 'bg-[#FAF8F5] border-[#E5DFD5] opacity-85'
+                    : 'bg-[#FAF9F7] border-[#ECE7DE]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${
+                      m.status === 'active'
+                        ? 'bg-[#B45309] text-white'
+                        : m.status === 'completed'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-neutral-200 text-neutral-600'
+                    }`}>
+                      {m.status === 'active' ? '● CURRENT' : m.status === 'completed' ? '✓ DONE' : 'UPCOMING'}
+                    </span>
+                    <span className="text-xs font-mono font-semibold text-[#111215]">{m.time}</span>
+                    <span className="text-[10px] font-mono text-[#7A7E89]">({m.duration})</span>
+                  </div>
+                </div>
+                <div className="text-xs font-medium text-[#111215] font-serif">{m.title}</div>
+                <p className="text-[11px] text-[#575B66] mt-0.5 leading-relaxed">{m.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right 5 cols: Weekly Recitations, Office Hours, Deadlines */}
+        <div className="lg:col-span-5 flex flex-col gap-4">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89]">
+            WEEKLY SESSIONS & RECITATIONS
+          </span>
+
+          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#DDD7CB] flex flex-col gap-3">
+            <div>
+              <div className="text-xs font-semibold text-[#111215]">Lectures (3 Days / Week)</div>
+              <div className="text-xs text-[#575B66] font-mono mt-0.5">Mon, Wed, Fri • 10:00 AM – 11:30 AM</div>
+              <div className="text-[11px] text-[#7A7E89]">Science Center Hall 101 • Room CALC</div>
+            </div>
+            <div className="border-t border-[#E5DFD5] pt-2.5">
+              <div className="text-xs font-semibold text-[#111215]">Prof. Leonhard Euler Office Hours</div>
+              <div className="text-xs text-[#575B66] font-mono mt-0.5">Tuesdays & Thursdays • 2:00 PM – 4:00 PM</div>
+              <div className="text-[11px] text-[#7A7E89]">Hall 302 or via Zoom by appointment</div>
+            </div>
+            <div className="border-t border-[#E5DFD5] pt-2.5">
+              <div className="text-xs font-semibold text-[#111215]">TA Discussion & Problem Lab</div>
+              <div className="text-xs text-[#575B66] font-mono mt-0.5">Wednesdays • 4:30 PM – 6:00 PM</div>
+              <div className="text-[11px] text-[#7A7E89]">Math Annex 12</div>
+            </div>
+          </div>
+
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89]">
+            UPCOMING EXAMS & DEADLINES
+          </span>
+          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#DDD7CB] flex flex-col gap-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <div>
+                <span className="font-medium text-[#111215]">Problem Set 4</span>
+                <span className="block text-[10px] text-[#7A7E89]">Conjugates & Difference Quotients</span>
+              </div>
+              <span className="font-mono text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Due Friday 11:59 PM</span>
+            </div>
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-[#E5DFD5]">
+              <div>
+                <span className="font-medium text-[#111215]">Midterm Exam 1</span>
+                <span className="block text-[10px] text-[#7A7E89]">Units 1 & 2 • In Class</span>
+              </div>
+              <span className="font-mono text-[10px] text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">Oct 24 • 10:00 AM</span>
+            </div>
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-[#E5DFD5]">
+              <div>
+                <span className="font-medium text-[#111215]">Midterm Exam 2</span>
+                <span className="block text-[10px] text-[#7A7E89]">Units 3 & 4 • In Class</span>
+              </div>
+              <span className="font-mono text-[10px] text-neutral-700 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">Nov 21 • 10:00 AM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 2E. CLASS SYLLABUS COMPONENT (Comprehensive Academic Curriculum & Policies)
+// ----------------------------------------------------------------------------
+function ClassSyllabusComponent({ roomCode, courseName, onBackToPulse }) {
+  return (
+    <div className="flex flex-col gap-6 font-sans">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#DDD7CB]">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#7A7E89] mb-1">
+            OFFICIAL COURSE SYLLABUS • FALL SEMESTER 2026
+          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#111215] tracking-tight">
+            {courseName}
+          </h2>
+          <p className="text-xs text-[#575B66] mt-0.5">
+            Section 04 &nbsp;•&nbsp; 4.0 Credit Hours &nbsp;•&nbsp; Instructor: Prof. Leonhard Euler
+          </p>
+        </div>
+        {onBackToPulse && (
+          <button
+            type="button"
+            onClick={onBackToPulse}
+            className="btn-gallery-pill-black !py-2 !px-4 text-xs font-mono"
+          >
+            ← Back to Personal Pulse
+          </button>
+        )}
+      </div>
+
+      {/* Course Overview & Objectives */}
+      <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#DDD7CB]">
+        <h3 className="font-serif text-lg font-semibold text-[#111215] mb-2">
+          Course Description & Scope
+        </h3>
+        <p className="text-xs text-[#383B42] leading-relaxed mb-3">
+          This course develops the mathematical principles of differential, integral, and vector calculus in three and higher dimensional spaces. Key concepts include vector-valued functions, space curves, partial differentiation, directional derivatives, gradient vector fields, multiple integrals in Cartesian, cylindrical, and spherical coordinates, line and surface integrals, and culminating in Green’s Theorem, Stokes’ Theorem, and the Divergence Theorem.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#E5DFD5] text-xs">
+          <div>
+            <span className="text-[10px] font-mono uppercase text-[#7A7E89] block">PREREQUISITE</span>
+            <span className="font-medium text-[#111215]">MATH 102 (Single-Var Calc, C or higher)</span>
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase text-[#7A7E89] block">TEXTBOOK</span>
+            <span className="font-medium text-[#111215]">Stewart Calculus (9th Edition)</span>
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase text-[#7A7E89] block">LIVE PULSE PORTAL</span>
+            <span className="font-medium text-[#111215]">NudgePoint Room: {roomCode}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 15-Week Curriculum Matrix */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89]">
+            15-WEEK CURRICULAR BREAKDOWN
+          </span>
+          <span className="text-[10px] font-mono text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
+            Currently in Week 4: Unit 2
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          {[
+            {
+              unit: 'Unit 1: Vectors & The Geometry of Space',
+              weeks: 'Weeks 1–3',
+              status: 'completed',
+              topics: '3D coordinate systems, vector arithmetic, dot and cross products, equations of lines and planes, quadric surfaces.'
+            },
+            {
+              unit: 'Unit 2: Vector Functions & Differential Calculus',
+              weeks: 'Weeks 4–6',
+              status: 'current',
+              topics: 'Vector functions and space curves, derivatives and integrals of vector functions, arc length and curvature, limits, algebraic conjugate substitutions, multivariable chain rule.'
+            },
+            {
+              unit: 'Unit 3: Partial Derivatives & Multivariable Optimization',
+              weeks: 'Weeks 7–9',
+              status: 'upcoming',
+              topics: 'Functions of several variables, limits and continuity in R^n, partial derivatives, tangent planes and linear approximations, directional derivatives, gradient vectors, maximum and minimum values, Lagrange multipliers.'
+            },
+            {
+              unit: 'Unit 4: Multiple Integrals & Coordinate Systems',
+              weeks: 'Weeks 10–12',
+              status: 'upcoming',
+              topics: 'Double integrals over general regions, polar coordinate transformations, surface area, triple integrals in cylindrical and spherical coordinates, Jacobian change of variables.'
+            },
+            {
+              unit: 'Unit 5: Vector Calculus & Field Theorems',
+              weeks: 'Weeks 13–15',
+              status: 'upcoming',
+              topics: 'Vector fields, line integrals, Fundamental Theorem of Line Integrals, Green’s Theorem, curl and divergence, surface integrals, Stokes’ Theorem, Divergence Theorem.'
+            }
+          ].map((u, i) => (
+            <div
+              key={i}
+              className={`p-4 rounded-xl border transition ${
+                u.status === 'current'
+                  ? 'bg-[#FEF7EE] border-[#EAD1A8] shadow-xs'
+                  : 'bg-[#FAF8F5] border-[#DDD7CB]'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${
+                    u.status === 'current'
+                      ? 'bg-[#B45309] text-white'
+                      : u.status === 'completed'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-neutral-200 text-neutral-600'
+                  }`}>
+                    {u.status === 'current' ? 'CURRENT UNIT' : u.status === 'completed' ? 'COMPLETED' : 'UPCOMING'}
+                  </span>
+                  <span className="font-serif text-sm font-semibold text-[#111215]">{u.unit}</span>
+                </div>
+                <span className="text-[10px] font-mono text-[#7A7E89]">{u.weeks}</span>
+              </div>
+              <p className="text-xs text-[#575B66] mt-1 leading-relaxed">{u.topics}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Grading Scheme & Policies */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#DDD7CB]">
+          <h4 className="font-serif text-base font-semibold text-[#111215] mb-3">
+            Assessment & Grading Weights
+          </h4>
+          <div className="space-y-2">
+            {[
+              { component: 'Weekly Problem Sets', weight: '25%', note: 'Due Fridays 11:59 PM (Lowest dropped)' },
+              { component: 'Midterm Examination 1', weight: '20%', note: 'Covers Units 1–2 (Week 7)' },
+              { component: 'Midterm Examination 2', weight: '20%', note: 'Covers Units 3–4 (Week 12)' },
+              { component: 'Comprehensive Final Exam', weight: '25%', note: 'Cumulative university scheduled' },
+              { component: 'In-Class Pulse Participation', weight: '10%', note: 'Active NudgePoint friction feedback' },
+            ].map((g, idx) => (
+              <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-[#E5DFD5] last:border-0">
+                <div>
+                  <span className="font-medium text-[#111215]">{g.component}</span>
+                  <span className="block text-[10px] text-[#7A7E89]">{g.note}</span>
+                </div>
+                <span className="font-mono font-bold text-xs text-[#1D4E89]">{g.weight}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#DDD7CB] flex flex-col justify-between">
+          <div>
+            <h4 className="font-serif text-base font-semibold text-[#111215] mb-2">
+              Classroom Dignity & Policies
+            </h4>
+            <ul className="text-xs text-[#575B66] space-y-2 list-disc list-inside leading-relaxed">
+              <li><strong>Zero-Stigma Feedback:</strong> NudgePoint friction pulses are completely anonymous to peers. Use signals freely whenever derivations feel fast or unclear.</li>
+              <li><strong>Collaboration:</strong> Concept discussions are celebrated. However, all homework submissions must be transcribed individually.</li>
+              <li><strong>Late Submissions:</strong> Up to 24 hours late with 10% deduction; beyond 24 hours requires dean approval.</li>
+            </ul>
+          </div>
+          <div className="mt-4 pt-3 border-t border-[#E5DFD5] text-[10px] font-mono text-[#7A7E89]">
+            Questions? Email Prof. Euler at <span className="underline font-semibold">prof.euler@nudgepoint.edu</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // 3. MAIN APPLICATION ROOT
 // ----------------------------------------------------------------------------
 function NudgePointApp() {
@@ -1166,10 +1514,12 @@ function NudgePointApp() {
     } else {
       const params = new URLSearchParams(rawHash.includes('?') ? rawHash.split('?')[1] : (rawHash.includes('&') ? rawHash : ''));
       if (params.get('view')) view = params.get('view');
-      else if (rawHash.includes('student')) view = 'student';
-      else if (rawHash.includes('podium')) view = 'podium';
-      else if (rawHash.includes('stage')) view = 'stage';
-      else if (rawHash.includes('analytics')) view = 'analytics';
+      else if (rawHash.includes('timings') || target.startsWith('timings')) view = 'timings';
+      else if (rawHash.includes('syllabus') || target.startsWith('syllabus')) view = 'syllabus';
+      else if (rawHash.includes('student') || target.startsWith('student')) view = 'student';
+      else if (rawHash.includes('podium') || target.startsWith('podium')) view = 'podium';
+      else if (rawHash.includes('stage') || target.startsWith('stage')) view = 'stage';
+      else if (rawHash.includes('analytics') || target.startsWith('analytics')) view = 'analytics';
 
       if (params.get('room')) code = params.get('room').toUpperCase();
     }
@@ -1264,6 +1614,9 @@ function NudgePointApp() {
   const [pinError, setPinError] = useState('');
   const [socketConnected, setSocketConnected] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
+
+  const isTeacherUser = (currentUser && currentUser.role === 'teacher') || (!currentUser && isTeacherAuthenticated);
+  const isStudentRole = (currentUser && currentUser.role === 'student') || activeView === 'student' || activeView === 'timings' || activeView === 'syllabus';
 
   // Authenticate / refresh user session on load
   useEffect(() => {
@@ -1676,6 +2029,7 @@ function NudgePointApp() {
 
   // Scenario 1: The Algebraic Leap (Skips line 2.5 conjugate cancel) -> Derails 11 students
   const simAlgebraicLeap = () => {
+    if (!isTeacherUser) return;
     acoustic.playPulseChime();
     const targets = students.filter(s => s.role === 'Shy' || (s.role === 'Note Copier' && ['C1','C2','C3','C4'].includes(s.seat)));
     const newItems = targets.map((s, idx) => ({
@@ -1694,6 +2048,7 @@ function NudgePointApp() {
 
   // Scenario 2: Pacing Sprint (Slide flipped before notes copied) -> Derails 7 Note Copiers
   const simPacingSprint = () => {
+    if (!isTeacherUser) return;
     acoustic.playPulseChime();
     const targets = students.filter(s => s.role === 'Note Copier');
     const newItems = targets.map((s, idx) => ({
@@ -1712,6 +2067,7 @@ function NudgePointApp() {
 
   // Scenario 3: Notation Ambiguity (Differential operator d/dx ambiguity) -> Derails 5 students
   const simNotationAmbiguity = () => {
+    if (!isTeacherUser) return;
     acoustic.playPulseChime();
     const targets = students.filter(s => ['s1', 's2', 's10', 's13', 's18'].includes(s.id));
     const newItems = targets.map((s, idx) => ({
@@ -1730,6 +2086,7 @@ function NudgePointApp() {
 
   // Scenario 4: Socratic Recovery Cascade (Comprehension wave cascades across room)
   const simCascadeRecovery = () => {
+    if (!isTeacherUser) return;
     acoustic.playResolve();
     if (typeof window !== 'undefined' && window.confetti) {
       try {
@@ -1752,6 +2109,7 @@ function NudgePointApp() {
 
   // Scenario 5: Full Reset
   const simResetAll = () => {
+    if (!isTeacherUser) return;
     acoustic.playTap();
     students.forEach(s => broadcast('RESOLVE', { studentId: s.id }));
     setPulses([]);
@@ -1869,7 +2227,11 @@ function NudgePointApp() {
           {/* Brand Logo in Bold Elegant Serif */}
           <div className="flex items-center gap-3">
             <span
-              onClick={() => setActiveView('studio')}
+              onClick={() => {
+                const targetView = (currentUser && currentUser.role === 'student') ? 'student' : 'studio';
+                window.location.hash = `#view=${targetView}`;
+                setActiveView(targetView);
+              }}
               className="font-serif text-2xl font-bold tracking-tight text-[#111215] cursor-pointer hover:opacity-80 transition"
             >
               NUDGEPOINT
@@ -1878,16 +2240,28 @@ function NudgePointApp() {
 
           {/* Centered Spaced-out Nav Links */}
           <nav className="hidden md:flex items-center gap-8 gallery-nav">
-            {[
-              { id: 'studio', label: 'STUDIO' },
-              { id: 'podium', label: 'PODIUM' },
-              { id: 'student', label: 'STUDENT' },
-              { id: 'stage', label: 'STAGE' },
-              { id: 'analytics', label: 'HEATMAP' },
-            ].map((link) => (
+            {(currentUser && currentUser.role === 'student'
+              ? [
+                  { id: 'student', label: 'STUDENT PULSE' },
+                  { id: 'timings', label: 'CLASS TIMINGS' },
+                  { id: 'syllabus', label: 'SYLLABUS' },
+                ]
+              : [
+                  { id: 'studio', label: 'STUDIO' },
+                  { id: 'podium', label: 'PODIUM' },
+                  { id: 'student', label: 'STUDENT' },
+                  { id: 'timings', label: 'TIMINGS' },
+                  { id: 'syllabus', label: 'SYLLABUS' },
+                  { id: 'stage', label: 'STAGE' },
+                  { id: 'analytics', label: 'HEATMAP' },
+                ]
+            ).map((link) => (
               <button
                 key={link.id}
-                onClick={() => setActiveView(link.id)}
+                onClick={() => {
+                  window.location.hash = `#view=${link.id}`;
+                  setActiveView(link.id);
+                }}
                 className={`gallery-nav-btn ${activeView === link.id ? 'active' : ''}`}
               >
                 {link.label}
@@ -1963,18 +2337,58 @@ function NudgePointApp() {
 
           {/* The Two Pill CTA Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            <button
-              onClick={() => setActiveView('podium')}
-              className="btn-gallery-pill-black"
-            >
-              EXPLORE PODIUM
-            </button>
-            <button
-              onClick={() => setActiveView('student')}
-              className="btn-gallery-pill-outline"
-            >
-              JOIN AS STUDENT
-            </button>
+            {currentUser && currentUser.role === 'student' ? (
+              <>
+                <button
+                  onClick={() => {
+                    window.location.hash = '#view=student';
+                    setActiveView('student');
+                  }}
+                  className="btn-gallery-pill-black"
+                >
+                  MY STUDENT PULSE
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.hash = '#view=timings';
+                    setActiveView('timings');
+                  }}
+                  className="btn-gallery-pill-outline"
+                >
+                  CLASS TIMINGS
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.hash = '#view=syllabus';
+                    setActiveView('syllabus');
+                  }}
+                  className="btn-gallery-pill-outline"
+                >
+                  COURSE SYLLABUS
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    window.location.hash = '#view=podium';
+                    setActiveView('podium');
+                  }}
+                  className="btn-gallery-pill-black"
+                >
+                  EXPLORE PODIUM
+                </button>
+                <button
+                  onClick={() => {
+                    window.location.hash = '#view=student';
+                    setActiveView('student');
+                  }}
+                  className="btn-gallery-pill-outline"
+                >
+                  JOIN AS STUDENT
+                </button>
+              </>
+            )}
           </div>
 
           {/* Scroll Down Indicator */}
@@ -2007,12 +2421,14 @@ function NudgePointApp() {
                 ({frictionCount} of {totalStudents} students signaling within 90s window)
               </span>
             </div>
-            <button
-              onClick={simCascadeRecovery}
-              className="tracking-[0.14em] uppercase font-semibold text-[#B45309] hover:text-[#78350F] underline underline-offset-4 transition"
-            >
-              RESOLVE ALL →
-            </button>
+            {isTeacherUser && !isStudentRole && (
+              <button
+                onClick={simCascadeRecovery}
+                className="tracking-[0.14em] uppercase font-semibold text-[#B45309] hover:text-[#78350F] underline underline-offset-4 transition"
+              >
+                RESOLVE ALL →
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2263,10 +2679,10 @@ function NudgePointApp() {
           )
         )}
 
-        {/* VIEW 3: DEDICATED STUDENT PHONE */}
+        {/* VIEW 3: DEDICATED STUDENT VIEW */}
         {activeView === 'student' && (
-          <div className="max-w-sm mx-auto w-full py-6">
-            <div className="gallery-panel p-8 flex flex-col justify-between min-h-[620px]">
+          <div className="max-w-4xl mx-auto w-full py-6">
+            <div className="gallery-panel p-6 sm:p-8 flex flex-col justify-between min-h-[620px]">
               <GalleryStudentComponent
                 roomCode={roomCode}
                 courseName={courseName}
@@ -2289,6 +2705,39 @@ function NudgePointApp() {
                   broadcast('UPVOTE', { id });
                 }}
                 notes={studentNotes}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 3B: STANDALONE CLASS TIMINGS */}
+        {activeView === 'timings' && (
+          <div className="max-w-4xl mx-auto w-full py-6">
+            <div className="gallery-panel p-6 sm:p-8">
+              <ClassTimingsComponent
+                roomCode={roomCode}
+                courseName={courseName}
+                activeTopic={activeTopic}
+                onBackToPulse={() => {
+                  window.location.hash = '#view=student';
+                  setActiveView('student');
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 3C: STANDALONE CLASS SYLLABUS */}
+        {activeView === 'syllabus' && (
+          <div className="max-w-4xl mx-auto w-full py-6">
+            <div className="gallery-panel p-6 sm:p-8">
+              <ClassSyllabusComponent
+                roomCode={roomCode}
+                courseName={courseName}
+                onBackToPulse={() => {
+                  window.location.hash = '#view=student';
+                  setActiveView('student');
+                }}
               />
             </div>
           </div>
@@ -2323,7 +2772,7 @@ function NudgePointApp() {
         )}
 
         {/* SIMULATION CONSOLE (IMMERSIVE LECTURE HALL AMPHITHEATER RADAR) */}
-        {showFlightSim && (
+        {showFlightSim && isTeacherUser && !isStudentRole && (
           <section className="border-t border-[#DDD7CB] pt-10 pb-4">
             <div className="gallery-panel p-8 bg-[#F5F1EA] shadow-md border border-[#D8D1C2]">
               
@@ -2471,6 +2920,40 @@ function NudgePointApp() {
                             const isLost = activeStudentIds.has(st.id);
                             const roleSlug = st.role === 'Shy' ? 'shy' : st.role === 'Note Copier' ? 'note' : 'flow';
                             const personaShort = st.role === 'Shy' ? 'SHY' : st.role === 'Note Copier' ? 'NOTE' : 'FLOW';
+
+                            if (!isTeacherUser) {
+                              return (
+                                <div
+                                  key={st.id}
+                                  className={`hall-seat-card read-only cursor-default ${isLost ? 'is-lost' : 'is-flow'}`}
+                                  title={`${st.name} [Seat ${st.seat}] (${st.role}) — Student presence (Read-Only)`}
+                                >
+                                  <div className="hall-seat-top">
+                                    <span className="hall-seat-tag">{st.seat}</span>
+                                    <span className={`hall-seat-status ${isLost ? 'lost' : 'flow'}`}>
+                                      <span className="hall-seat-status-beacon"></span>
+                                      <span>{isLost ? 'LOST' : 'FLOW'}</span>
+                                    </span>
+                                  </div>
+
+                                  <div className="hall-seat-middle">
+                                    <div className={`hall-seat-avatar ${roleSlug}`}>
+                                      {st.initials}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                      <span className="hall-seat-name">{st.name}</span>
+                                      <span className={`student-chip-persona persona-badge-${roleSlug}`}>
+                                        {personaShort}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="hall-seat-thought" title={st.thought}>
+                                    💭 “{st.thought}”
+                                  </div>
+                                </div>
+                              );
+                            }
 
                             return (
                               <button
@@ -2971,6 +3454,32 @@ function GalleryStudentComponent({
             {activeTopic}
           </div>
         </div>
+
+        {/* Navigation Sub-Tabs */}
+        <div className="mt-3 flex items-center gap-1.5 p-1 rounded-xl bg-[#FAF8F5] border border-[#DDD7CB] overflow-x-auto" role="tablist" aria-label="Student Navigation">
+          {[
+            { id: 'pulse', label: '⚡ Pulse' },
+            { id: 'timings', label: '⏱️ Timings' },
+            { id: 'syllabus', label: '📋 Syllabus' },
+            { id: 'question', label: '💬 Ask' },
+            { id: 'notes', label: `📝 Log (${notes.length})` },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSubTab(tab.id)}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-mono whitespace-nowrap transition ${
+                subTab === tab.id
+                  ? 'bg-[#1E262B] text-[#FAF8F4] font-semibold shadow-xs'
+                  : 'text-[#575B66] hover:text-[#111215] hover:bg-[#EDE8E1]'
+              }`}
+              role="tab"
+              aria-selected={subTab === tab.id}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Pulse Surface */}
@@ -3022,6 +3531,29 @@ function GalleryStudentComponent({
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Class Timings Tab */}
+      {subTab === 'timings' && (
+        <div className="py-2 overflow-y-auto max-h-[550px]" role="tabpanel" id="student-panel-timings" aria-labelledby="student-tab-timings">
+          <ClassTimingsComponent
+            roomCode={roomCode}
+            courseName={courseName}
+            activeTopic={activeTopic}
+            onBackToPulse={() => setSubTab('pulse')}
+          />
+        </div>
+      )}
+
+      {/* Course Syllabus Tab */}
+      {subTab === 'syllabus' && (
+        <div className="py-2 overflow-y-auto max-h-[550px]" role="tabpanel" id="student-panel-syllabus" aria-labelledby="student-tab-syllabus">
+          <ClassSyllabusComponent
+            roomCode={roomCode}
+            courseName={courseName}
+            onBackToPulse={() => setSubTab('pulse')}
+          />
         </div>
       )}
 
@@ -3083,37 +3615,29 @@ function GalleryStudentComponent({
       )}
 
       {/* Bottom Nav Segment */}
-      <div className="pt-3 border-t border-[#DDD7CB] flex items-center justify-around text-[10px] font-mono tracking-[0.2em] uppercase" role="tablist" aria-label="Student view tabs">
-        <button
-          onClick={() => setSubTab('pulse')}
-          className={`transition ${subTab === 'pulse' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
-          role="tab"
-          aria-selected={subTab === 'pulse'}
-          aria-controls="student-panel-pulse"
-          id="student-tab-pulse"
-        >
-          PULSE
-        </button>
-        <button
-          onClick={() => setSubTab('question')}
-          className={`transition ${subTab === 'question' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
-          role="tab"
-          aria-selected={subTab === 'question'}
-          aria-controls="student-panel-question"
-          id="student-tab-question"
-        >
-          ASK
-        </button>
-        <button
-          onClick={() => setSubTab('notes')}
-          className={`transition ${subTab === 'notes' ? 'text-[#111215] font-bold' : 'text-[#7A7E89] hover:text-[#111215]'}`}
-          role="tab"
-          aria-selected={subTab === 'notes'}
-          aria-controls="student-panel-notes"
-          id="student-tab-notes"
-        >
-          LOG ({notes.length})
-        </button>
+      <div className="pt-3 border-t border-[#DDD7CB] flex items-center justify-around text-[10px] font-mono tracking-[0.16em] uppercase overflow-x-auto gap-1" role="tablist" aria-label="Student view tabs">
+        {[
+          { id: 'pulse', label: 'PULSE' },
+          { id: 'timings', label: 'TIMINGS' },
+          { id: 'syllabus', label: 'SYLLABUS' },
+          { id: 'question', label: 'ASK' },
+          { id: 'notes', label: `LOG (${notes.length})` },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setSubTab(tab.id)}
+            className={`py-1 px-2.5 rounded transition whitespace-nowrap ${
+              subTab === tab.id
+                ? 'text-[#111215] font-bold bg-[#E5DFD5]'
+                : 'text-[#7A7E89] hover:text-[#111215]'
+            }`}
+            role="tab"
+            aria-selected={subTab === tab.id}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
     </div>

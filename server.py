@@ -584,8 +584,8 @@ class NudgePointHTTPHandler(SimpleHTTPRequestHandler):
             self.wfile.write(b"Forbidden")
             return
 
-        # Rewrite SPA login paths to index.html
-        if clean_path in ("/login", "/login/teacher", "/login/student"):
+        # Rewrite SPA paths to index.html
+        if clean_path in ("/login", "/login/teacher", "/login/student", "/timings", "/syllabus", "/student"):
             self.path = "/index.html"
             return super().do_GET()
 
