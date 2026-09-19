@@ -584,6 +584,11 @@ class NudgePointHTTPHandler(SimpleHTTPRequestHandler):
             self.wfile.write(b"Forbidden")
             return
 
+        # Rewrite SPA login paths to index.html
+        if clean_path in ("/login", "/login/teacher", "/login/student"):
+            self.path = "/index.html"
+            return super().do_GET()
+
         # Standard static file delivery
         super().do_GET()
 
@@ -614,10 +619,22 @@ class NudgePointHTTPHandler(SimpleHTTPRequestHandler):
         if clean_path == "/api/auth/login":
             email = payload.get("email", "")
             password = payload.get("password", "")
+            expected_role = payload.get("expectedRole") or payload.get("role")
+
             user = db_authenticate_user(email, password)
             if not user:
                 self.send_error_json(401, "Invalid email or password.")
                 return
+
+            if expected_role and user["role"] != expected_role:
+                if expected_role == "teacher":
+                    self.send_error_json(403, "This account is registered as a Student. Please use the Student login portal.")
+                elif expected_role == "student":
+                    self.send_error_json(403, "This account is registered as an Instructor. Please use the Teacher login portal.")
+                else:
+                    self.send_error_json(403, f"Access denied. Account is registered as {user['role']}.")
+                return
+
             token = db_create_session(user["id"], user["role"])
             self.send_json(200, {"token": token, "user": user})
             return

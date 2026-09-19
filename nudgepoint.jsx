@@ -589,21 +589,591 @@ function AuthModal({ isOpen, onClose, onLogin, onSignup, currentUser, onLogout }
 }
 
 // ----------------------------------------------------------------------------
+// 2C. ROLE CHOOSER LANDING SCREEN (Part B Distinct Architectural Split)
+// ----------------------------------------------------------------------------
+function LoginChooserComponent({ onSelectRole, onBack }) {
+  return (
+    <div className="min-h-screen bg-[#F3F5F4] text-[#1E262B] flex flex-col font-sans selection:bg-[#1E262B] selection:text-[#F3F5F4]">
+      {/* Clean Top Navigation Bar */}
+      <header className="border-b border-[#4B555D]/20 bg-[#F3F5F4] px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <span className="font-serif text-2xl font-bold tracking-tight text-[#1E262B]">
+            NUDGEPOINT
+          </span>
+          <button
+            onClick={onBack}
+            className="text-xs font-sans text-[#4B555D] hover:text-[#1E262B] transition py-1.5 px-3 rounded-lg border border-[#4B555D]/20 hover:border-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+          >
+            Return to Live Classroom
+          </button>
+        </div>
+      </header>
+
+      {/* Main Role Selection Surface */}
+      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-12 sm:py-16 flex flex-col justify-center">
+        <div className="text-center mb-10 sm:mb-12">
+          <h1 className="font-cormorant text-4xl sm:text-5xl font-medium tracking-tight text-[#1E262B] leading-tight">
+            Enter NudgePoint
+          </h1>
+          <p className="text-sm font-sans text-[#4B555D] mt-3 max-w-md mx-auto leading-relaxed">
+            Select your role to access classroom tools and telemetry.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {/* TEACHER DOOR */}
+          <div className="bg-[#FFFFFF] border border-[#4B555D]/20 rounded-2xl p-8 flex flex-col justify-between transition hover:border-[#1E262B]">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-sans font-semibold text-[#1E262B] bg-[#F3F5F4] px-2.5 py-1 rounded-md border border-[#4B555D]/20">
+                  Instructors & Teaching Assistants
+                </span>
+                <span className="text-2xl" aria-hidden="true">🧑‍🏫</span>
+              </div>
+              <h2 className="font-cormorant text-2xl text-[#1E262B] font-medium">
+                Teacher Portal
+              </h2>
+              <p className="text-xs font-sans text-[#4B555D] mt-2 leading-relaxed">
+                Lead live sessions with ambient comprehension radar. Track student friction velocity in real time, advance milestones, and deploy targeted pedagogical bridges.
+              </p>
+              <ul className="mt-5 space-y-2 text-xs font-sans text-[#1E262B]">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E262B]"></span>
+                  <span>Podium friction radar (90-second sliding window)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E262B]"></span>
+                  <span>Projector question moderation & spotlighting</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E262B]"></span>
+                  <span>Post-lecture debrief & derailment analytics</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-[#4B555D]/15">
+              <button
+                onClick={() => onSelectRole('teacher')}
+                className="w-full bg-[#1E262B] text-[#F3F5F4] py-3 px-5 rounded-xl font-sans font-medium text-xs hover:bg-[#383B42] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition shadow-xs"
+              >
+                Sign In as Instructor
+              </button>
+            </div>
+          </div>
+
+          {/* STUDENT DOOR */}
+          <div className="bg-[#FFFFFF] border border-[#4B555D]/20 rounded-2xl p-8 flex flex-col justify-between transition hover:border-[#1D4E89]">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-sans font-semibold text-[#1D4E89] bg-[#1D4E89]/10 px-2.5 py-1 rounded-md border border-[#1D4E89]/20">
+                  Enrolled Students & Guests
+                </span>
+                <span className="text-2xl" aria-hidden="true">🧑‍🎓</span>
+              </div>
+              <h2 className="font-cormorant text-2xl text-[#1E262B] font-medium">
+                Student Portal
+              </h2>
+              <p className="text-xs font-sans text-[#4B555D] mt-2 leading-relaxed">
+                Privately communicate when algebra skips a step or lecture pacing accelerates. Your friction signals are aggregated anonymously to keep the room on track.
+              </p>
+              <ul className="mt-5 space-y-2 text-xs font-sans text-[#1E262B]">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D4E89]"></span>
+                  <span>Zero peer exposure: pulses are 100% anonymous</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D4E89]"></span>
+                  <span>Single-tap friction categories (Step, Pacing, Notation)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D4E89]"></span>
+                  <span>Submit and second lecture questions without raising hand</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-[#4B555D]/15">
+              <button
+                onClick={() => onSelectRole('student')}
+                className="w-full bg-[#1D4E89] text-[#FFFFFF] py-3 px-5 rounded-xl font-sans font-medium text-xs hover:bg-[#153A66] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition shadow-xs"
+              >
+                Sign In as Student
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 2D. TEACHER LOGIN PORTAL (Structured Lectern Docket + Authentication Desk)
+// ----------------------------------------------------------------------------
+function TeacherLoginComponent({
+  roomCode,
+  courseName,
+  activeTopic,
+  onLoginSuccess,
+  onSwitchToStudent,
+  onBack,
+  onPinUnlock
+}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPinForm, setShowPinForm] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const res = await onLoginSuccess(email, password, 'teacher');
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Authentication failed');
+    }
+  };
+
+  const handleQuickEuler = async () => {
+    setEmail('prof.euler@nudgepoint.edu');
+    setPassword('PodiumPass123!');
+    setLoading(true);
+    setError('');
+    const res = await onLoginSuccess('prof.euler@nudgepoint.edu', 'PodiumPass123!', 'teacher');
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Authentication failed');
+    }
+  };
+
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    if (!pinInput.trim()) return;
+    setLoading(true);
+    setPinError('');
+    const res = await onPinUnlock(pinInput);
+    setLoading(false);
+    if (!res.success) {
+      setPinError(res.error || 'Invalid PIN for room ' + roomCode);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F3F5F4] text-[#1E262B] flex flex-col font-sans selection:bg-[#1E262B] selection:text-[#F3F5F4]">
+      {/* Top Header */}
+      <header className="border-b border-[#4B555D]/20 bg-[#F3F5F4] px-6 py-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="font-serif text-2xl font-bold tracking-tight text-[#1E262B]">
+              NUDGEPOINT
+            </span>
+            <span className="text-xs font-sans text-[#4B555D] border-l border-[#4B555D]/30 pl-3">
+              Faculty Lectern
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSwitchToStudent}
+              className="text-xs font-sans text-[#1D4E89] hover:underline"
+            >
+              Switch to Student Portal
+            </button>
+            <button
+              onClick={onBack}
+              className="text-xs font-sans text-[#4B555D] hover:text-[#1E262B] transition py-1.5 px-3 rounded-lg border border-[#4B555D]/20 hover:border-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+            >
+              Return to Session
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Two-Column Lectern Docket & Authentication Desk */}
+      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-10 flex items-center">
+        <div className="w-full grid grid-cols-1 md:grid-cols-12 rounded-2xl border border-[#4B555D]/20 overflow-hidden shadow-xs">
+          
+          {/* LEFT COLUMN: Chalkboard Slate Lectern Docket */}
+          <div className="md:col-span-5 bg-[#1E262B] text-[#F3F5F4] p-8 flex flex-col justify-between">
+            <div>
+              <div className="text-xs font-sans text-[#F3F5F4]/70 mb-1">
+                Room Preparation Docket
+              </div>
+              <h1 className="font-cormorant text-2xl text-[#FFFFFF] font-medium">
+                Lectern Readiness
+              </h1>
+
+              <div className="mt-6 pt-5 border-t border-[#4B555D]/40 space-y-4 text-xs">
+                <div>
+                  <span className="text-[#F3F5F4]/60 block text-[11px]">Assigned Room</span>
+                  <span className="font-mono text-base font-semibold text-[#FFFFFF]">{roomCode}</span>
+                </div>
+                <div>
+                  <span className="text-[#F3F5F4]/60 block text-[11px]">Course</span>
+                  <span className="font-sans font-medium text-[#FFFFFF]">{courseName}</span>
+                </div>
+                <div>
+                  <span className="text-[#F3F5F4]/60 block text-[11px]">Current Milestone</span>
+                  <span className="font-sans text-[#FFFFFF]/90">{activeTopic}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-[#4B555D]/40 text-xs text-[#F3F5F4]/80 space-y-2">
+                <div className="font-sans font-semibold text-[#FFFFFF]">Podium Controls:</div>
+                <p className="text-[11px] leading-relaxed text-[#F3F5F4]/70">
+                  Signing in verifies ownership of room {roomCode} and activates real-time cognitive radar telemetry.
+                </p>
+              </div>
+            </div>
+
+            {/* Deliberate Bold Element: 1-Click Instructor Preset */}
+            <div className="mt-8 pt-6 border-t border-[#4B555D]/40">
+              <span className="text-[11px] font-sans text-[#F3F5F4]/70 block mb-2">
+                One-Click Verified Demo Access:
+              </span>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleQuickEuler}
+                className="w-full bg-[#FFFFFF] text-[#1E262B] hover:bg-[#F3F5F4] transition py-2.5 px-4 rounded-xl text-xs font-sans font-semibold text-left flex items-center justify-between focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+              >
+                <div>
+                  <div>Prof. Leonhard Euler</div>
+                  <div className="text-[10px] text-[#4B555D] font-mono">Owner of Room {roomCode}</div>
+                </div>
+                <span className="text-base" aria-hidden="true">🧑‍🏫</span>
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Instructor Authentication Desk */}
+          <div className="md:col-span-7 bg-[#FFFFFF] p-8 sm:p-10 flex flex-col justify-center">
+            <div className="mb-6">
+              <h2 className="font-cormorant text-3xl font-normal text-[#1E262B]">
+                Instructor Access
+              </h2>
+              <p className="text-xs font-sans text-[#4B555D] mt-1.5">
+                Sign in with your verified instructor credentials to manage live classroom telemetry.
+              </p>
+            </div>
+
+            {error && (
+              <div role="alert" className="mb-6 p-4 rounded-xl bg-[#FAF3EA] border border-[#9E5A18] text-xs font-sans text-[#9E5A18] flex items-start gap-2.5">
+                <span className="text-base shrink-0">⚠️</span>
+                <div>
+                  <div className="font-semibold">Access Notice</div>
+                  <div className="mt-0.5 leading-relaxed">{error}</div>
+                </div>
+              </div>
+            )}
+
+            {!showPinForm ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-sans font-medium text-[#1E262B] mb-1.5">
+                    Faculty Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="prof.euler@nudgepoint.edu"
+                    className="w-full text-xs font-sans py-3 px-3.5 rounded-xl border border-[#4B555D]/30 bg-[#FFFFFF] text-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-sans font-medium text-[#1E262B] mb-1.5">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full text-xs font-sans py-3 px-3.5 rounded-xl border border-[#4B555D]/30 bg-[#FFFFFF] text-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#1E262B] text-[#FFFFFF] py-3 px-4 rounded-xl text-xs font-sans font-medium hover:bg-[#383B42] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition disabled:opacity-50 mt-2"
+                >
+                  {loading ? 'Verifying Faculty Credentials...' : 'Sign In to Podium'}
+                </button>
+
+                <div className="pt-4 border-t border-[#4B555D]/15 flex items-center justify-between text-xs text-[#4B555D]">
+                  <span>Standing at the physical lectern?</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPinForm(true)}
+                    className="text-[#1D4E89] font-medium hover:underline"
+                  >
+                    Unlock with Room PIN
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handlePinSubmit} className="space-y-4">
+                <div className="p-3 bg-[#F3F5F4] rounded-xl border border-[#4B555D]/20 text-xs text-[#4B555D]">
+                  Enter the 4-digit instructor PIN displayed on the podium tablet for Room <strong>{roomCode}</strong>.
+                </div>
+
+                {pinError && (
+                  <div role="alert" className="p-3 rounded-xl bg-[#FAF3EA] border border-[#9E5A18] text-xs font-sans text-[#9E5A18]">
+                    {pinError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-sans font-medium text-[#1E262B] mb-1.5">
+                    Instructor Room PIN
+                  </label>
+                  <input
+                    type="password"
+                    maxLength={8}
+                    required
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value)}
+                    placeholder="Default: 8492"
+                    className="w-full text-center tracking-[0.3em] font-mono text-base py-3 px-3.5 rounded-xl border border-[#4B555D]/30 bg-[#FFFFFF] text-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#1E262B] text-[#FFFFFF] py-3 px-4 rounded-xl text-xs font-sans font-medium hover:bg-[#383B42] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition disabled:opacity-50"
+                >
+                  {loading ? 'Checking PIN...' : 'Verify Room Passkey'}
+                </button>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPinForm(false)}
+                    className="text-xs font-sans text-[#4B555D] hover:underline"
+                  >
+                    Return to Email Login
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// 2E. STUDENT LOGIN PORTAL (Single-Handed Admission Pass with Peer Privacy)
+// ----------------------------------------------------------------------------
+function StudentLoginComponent({
+  roomCode,
+  courseName,
+  onLoginSuccess,
+  onSwitchToTeacher,
+  onGuestJoin,
+  onBack
+}) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const res = await onLoginSuccess(email, password, 'student');
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Authentication failed');
+    }
+  };
+
+  const handleQuickAlex = async () => {
+    setEmail('alex.rivera@nudgepoint.edu');
+    setPassword('StudentPass123!');
+    setLoading(true);
+    setError('');
+    const res = await onLoginSuccess('alex.rivera@nudgepoint.edu', 'StudentPass123!', 'student');
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Authentication failed');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F3F5F4] text-[#1E262B] flex flex-col font-sans selection:bg-[#1D4E89] selection:text-[#FFFFFF]">
+      {/* Top Header */}
+      <header className="border-b border-[#4B555D]/20 bg-[#F3F5F4] px-6 py-4">
+        <div className="max-w-md mx-auto flex items-center justify-between">
+          <span className="font-serif text-2xl font-bold tracking-tight text-[#1E262B]">
+            NUDGEPOINT
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSwitchToTeacher}
+              className="text-xs font-sans text-[#1D4E89] hover:underline"
+            >
+              Instructor Portal
+            </button>
+            <button
+              onClick={onBack}
+              className="text-xs font-sans text-[#4B555D] hover:text-[#1E262B] transition py-1 px-2.5 rounded-lg border border-[#4B555D]/20 focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Student Pass Card */}
+      <main className="flex-1 max-w-md mx-auto w-full px-4 py-8 flex flex-col justify-center">
+        <div className="bg-[#FFFFFF] border border-[#4B555D]/20 rounded-2xl overflow-hidden shadow-xs">
+          
+          {/* DELIBERATE BOLD ELEMENT: Perforated Admission Pass Stub */}
+          <div className="p-6 bg-[#FAFBFB] border-b-2 border-dashed border-[#4B555D]/30">
+            <div className="flex items-center justify-between text-xs font-mono text-[#4B555D]">
+              <span>ADMISSION PASS</span>
+              <span>ROOM {roomCode}</span>
+            </div>
+            <h1 className="font-cormorant text-2xl font-medium text-[#1E262B] mt-1">
+              {courseName}
+            </h1>
+
+            {/* Prominent Privacy Statement */}
+            <div className="mt-3 p-3 rounded-xl bg-[#F3F5F4] border border-[#4B555D]/15 text-xs text-[#4B555D] leading-relaxed flex items-start gap-2">
+              <span className="text-base shrink-0 text-[#1D4E89]">🛡️</span>
+              <div>
+                <strong className="text-[#1E262B] block">Peer Privacy Guarantee:</strong>
+                Your identity is never shown to classmates. Friction pulses appear purely as anonymous numbers on the instructor's radar.
+              </div>
+            </div>
+          </div>
+
+          {/* Student Form Body */}
+          <div className="p-6 sm:p-8 space-y-4">
+            {error && (
+              <div role="alert" className="p-3.5 rounded-xl bg-[#FAF3EA] border border-[#9E5A18] text-xs font-sans text-[#9E5A18] flex items-start gap-2">
+                <span className="shrink-0">⚠️</span>
+                <div className="leading-relaxed">{error}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-sans font-medium text-[#1E262B] mb-1.5">
+                  Student Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="alex.rivera@nudgepoint.edu"
+                  className="w-full text-xs font-sans py-3 px-3.5 rounded-xl border border-[#4B555D]/30 bg-[#FFFFFF] text-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-sans font-medium text-[#1E262B] mb-1.5">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full text-xs font-sans py-3 px-3.5 rounded-xl border border-[#4B555D]/30 bg-[#FFFFFF] text-[#1E262B] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#1D4E89] text-[#FFFFFF] py-3 px-4 rounded-xl text-xs font-sans font-medium hover:bg-[#153A66] focus:ring-2 focus:ring-[#1D4E89] focus:outline-none transition disabled:opacity-50 mt-1"
+              >
+                {loading ? 'Connecting to Room...' : 'Enter Classroom'}
+              </button>
+            </form>
+
+            {/* 1-Click Demo Alex Rivera */}
+            <div className="pt-4 border-t border-[#4B555D]/15">
+              <span className="text-[11px] font-sans text-[#4B555D] block mb-2">
+                One-Click Enrolled Student Preset:
+              </span>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleQuickAlex}
+                className="w-full bg-[#F3F5F4] border border-[#1D4E89]/30 text-[#1D4E89] hover:bg-white transition py-2.5 px-3.5 rounded-xl text-xs font-sans font-semibold text-left flex items-center justify-between focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+              >
+                <div>
+                  <div>Alex Rivera</div>
+                  <div className="text-[10px] text-[#4B555D] font-mono">Enrolled in Room {roomCode}</div>
+                </div>
+                <span className="text-base" aria-hidden="true">🧑‍🎓</span>
+              </button>
+            </div>
+
+            {/* Guest Pass Bypass */}
+            <div className="pt-3 text-center border-t border-[#4B555D]/15">
+              <button
+                type="button"
+                onClick={onGuestJoin}
+                className="text-xs font-sans text-[#4B555D] hover:text-[#1E262B] underline focus:ring-2 focus:ring-[#1D4E89] focus:outline-none"
+              >
+                Join as Anonymous Guest (No Account Required)
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // 3. MAIN APPLICATION ROOT
 // ----------------------------------------------------------------------------
 function NudgePointApp() {
   const parseRoute = () => {
-    const hash = window.location.hash.replace(/^#/, '');
-    const params = new URLSearchParams(hash);
+    const rawHash = window.location.hash.replace(/^#\/?/, '');
+    const pathname = window.location.pathname ? window.location.pathname.replace(/^\//, '') : '';
+    const target = rawHash || pathname;
+
     let view = 'studio';
     let code = 'CALC';
-    if (params.get('view')) view = params.get('view');
-    else if (hash.includes('student')) view = 'student';
-    else if (hash.includes('podium')) view = 'podium';
-    else if (hash.includes('stage')) view = 'stage';
-    else if (hash.includes('analytics')) view = 'analytics';
 
-    if (params.get('room')) code = params.get('room').toUpperCase();
+    if (target.startsWith('login/teacher') || target.startsWith('view=login-teacher')) {
+      view = 'login-teacher';
+    } else if (target.startsWith('login/student') || target.startsWith('view=login-student')) {
+      view = 'login-student';
+    } else if (target.startsWith('login') || target.startsWith('view=login')) {
+      view = 'login-chooser';
+    } else {
+      const params = new URLSearchParams(rawHash.includes('?') ? rawHash.split('?')[1] : (rawHash.includes('&') ? rawHash : ''));
+      if (params.get('view')) view = params.get('view');
+      else if (rawHash.includes('student')) view = 'student';
+      else if (rawHash.includes('podium')) view = 'podium';
+      else if (rawHash.includes('stage')) view = 'stage';
+      else if (rawHash.includes('analytics')) view = 'analytics';
+
+      if (params.get('room')) code = params.get('room').toUpperCase();
+    }
+
     return { view, code };
   };
 
@@ -721,12 +1291,15 @@ function NudgePointApp() {
       .catch(() => {});
   }, [authToken]);
 
-  const loginUser = async (email, password) => {
+  const loginUser = async (email, password, expectedRole = null) => {
     try {
+      const payload = { email, password };
+      if (expectedRole) payload.expectedRole = expectedRole;
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
@@ -740,7 +1313,7 @@ function NudgePointApp() {
         localStorage.setItem('np_user', JSON.stringify(data.user));
       } catch (e) {}
       setPinError('');
-      return { success: true };
+      return { success: true, user: data.user };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -936,18 +1509,14 @@ function NudgePointApp() {
     }
   };
 
-  const handleVerifyTeacherPin = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const pin = pinInput.trim();
-    if (!pin) {
-      setPinError('Please enter the 4-digit teacher passkey.');
-      return;
-    }
+  const verifyTeacherPinDirect = async (pin) => {
+    const cleanPin = (pin || '').trim();
+    if (!cleanPin) return { success: false, error: 'Please enter the 4-digit teacher passkey.' };
     try {
       const res = await fetch('/api/rooms/verify-pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ room: roomCode, pin })
+        body: JSON.stringify({ room: roomCode, pin: cleanPin })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -959,23 +1528,30 @@ function NudgePointApp() {
             localStorage.setItem('np_user', JSON.stringify(data.user));
           } catch (e) {}
         }
-        try { localStorage.setItem('np_teacher_pin', pin); } catch (e) {}
-        setTeacherPin(pin);
+        try { localStorage.setItem('np_teacher_pin', cleanPin); } catch (e) {}
+        setTeacherPin(cleanPin);
         setIsTeacherAuthenticated(true);
         setPinError('');
+        return { success: true };
       } else {
-        setPinError('Invalid Teacher PIN. (Default Room CALC PIN is 8492)');
+        return { success: false, error: 'Invalid Teacher PIN. (Default Room CALC PIN is 8492)' };
       }
     } catch (err) {
-      if (pin === teacherPin || pin === '8492') {
-        try { localStorage.setItem('np_teacher_pin', pin); } catch (e) {}
-        setTeacherPin(pin);
+      if (cleanPin === teacherPin || cleanPin === '8492') {
+        try { localStorage.setItem('np_teacher_pin', cleanPin); } catch (e) {}
+        setTeacherPin(cleanPin);
         setIsTeacherAuthenticated(true);
         setPinError('');
-      } else {
-        setPinError('Invalid Teacher PIN. (Default Room CALC PIN is 8492)');
+        return { success: true };
       }
+      return { success: false, error: 'Invalid Teacher PIN. (Default Room CALC PIN is 8492)' };
     }
+  };
+
+  const handleVerifyTeacherPin = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const res = await verifyTeacherPinDirect(pinInput);
+    if (!res.success) setPinError(res.error);
   };
 
   const handleLogoutTeacher = () => {
@@ -1181,6 +1757,84 @@ function NudgePointApp() {
     setPulses([]);
   };
 
+  if (activeView === 'login-chooser') {
+    return (
+      <LoginChooserComponent
+        onSelectRole={(role) => {
+          window.location.hash = `#/login/${role}`;
+          setActiveView(`login-${role}`);
+        }}
+        onBack={() => {
+          window.location.hash = '#view=studio';
+          setActiveView('studio');
+        }}
+      />
+    );
+  }
+
+  if (activeView === 'login-teacher') {
+    return (
+      <TeacherLoginComponent
+        roomCode={roomCode}
+        courseName={courseName}
+        activeTopic={activeTopic}
+        onLoginSuccess={async (email, password, role) => {
+          const res = await loginUser(email, password, role);
+          if (res.success) {
+            window.location.hash = '#view=podium';
+            setActiveView('podium');
+          }
+          return res;
+        }}
+        onSwitchToStudent={() => {
+          window.location.hash = '#/login/student';
+          setActiveView('login-student');
+        }}
+        onBack={() => {
+          window.location.hash = '#view=studio';
+          setActiveView('studio');
+        }}
+        onPinUnlock={async (pin) => {
+          const res = await verifyTeacherPinDirect(pin);
+          if (res.success) {
+            window.location.hash = '#view=podium';
+            setActiveView('podium');
+          }
+          return res;
+        }}
+      />
+    );
+  }
+
+  if (activeView === 'login-student') {
+    return (
+      <StudentLoginComponent
+        roomCode={roomCode}
+        courseName={courseName}
+        onLoginSuccess={async (email, password, role) => {
+          const res = await loginUser(email, password, role);
+          if (res.success) {
+            window.location.hash = '#view=student';
+            setActiveView('student');
+          }
+          return res;
+        }}
+        onSwitchToTeacher={() => {
+          window.location.hash = '#/login/teacher';
+          setActiveView('login-teacher');
+        }}
+        onGuestJoin={() => {
+          window.location.hash = '#view=student';
+          setActiveView('student');
+        }}
+        onBack={() => {
+          window.location.hash = '#view=studio';
+          setActiveView('studio');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#EDE8E1] text-[#1A1B1F] flex flex-col font-sans relative overflow-x-hidden selection:bg-neutral-900 selection:text-white">
       
@@ -1274,7 +1928,10 @@ function NudgePointApp() {
               </div>
             ) : (
               <button
-                onClick={() => setAuthModalOpen(true)}
+                onClick={() => {
+                  window.location.hash = '#/login';
+                  setActiveView('login-chooser');
+                }}
                 className="btn-gallery-pill-black !py-1.5 !px-3.5 text-[10px] font-mono tracking-wider shrink-0"
               >
                 🔑 SIGN IN
@@ -1425,8 +2082,8 @@ function NudgePointApp() {
                   activeStudentPulse={activeStudentPulse}
                   studentToken={studentToken}
                   currentUser={currentUser}
-                  onOpenAuth={() => setAuthModalOpen(true)}
-                  onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!')}
+                  onOpenAuth={() => { window.location.hash = '#/login/student'; setActiveView('login-student'); }}
+                  onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!', 'student')}
                   onSignal={handleStudentSignal}
                   onResolve={handleStudentResolve}
                   questions={questions}
@@ -1530,10 +2187,13 @@ function NudgePointApp() {
                 <div className="flex items-center justify-between pt-2">
                   <button
                     type="button"
-                    onClick={() => setAuthModalOpen(true)}
+                    onClick={() => {
+                      window.location.hash = '#/login/teacher';
+                      setActiveView('login-teacher');
+                    }}
                     className="text-xs font-mono text-[#111215] hover:underline"
                   >
-                    Custom Sign In →
+                    Teacher Login Portal
                   </button>
                   <button
                     type="button"
@@ -1614,8 +2274,8 @@ function NudgePointApp() {
                 activeStudentPulse={activeStudentPulse}
                 studentToken={studentToken}
                 currentUser={currentUser}
-                onOpenAuth={() => setAuthModalOpen(true)}
-                onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!')}
+                onOpenAuth={() => { window.location.hash = '#/login/student'; setActiveView('login-student'); }}
+                onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!', 'student')}
                 onSignal={handleStudentSignal}
                 onResolve={handleStudentResolve}
                 questions={questions}
@@ -1658,7 +2318,7 @@ function NudgePointApp() {
             totalStudents={totalStudents}
             authToken={authToken}
             currentUser={currentUser}
-            onOpenAuth={() => setAuthModalOpen(true)}
+            onOpenAuth={() => { window.location.hash = '#/login/teacher'; setActiveView('login-teacher'); }}
           />
         )}
 

@@ -296,5 +296,78 @@ class TestAuthRBAC(unittest.TestCase):
         me_handler_after.do_GET()
         me_handler_after.send_response.assert_called_with(401)
 
+    # -----------------------------------------------------------------------
+    # 5. Role-Split Portal Enforcement (Part A)
+    # -----------------------------------------------------------------------
+    def test_cross_role_login_rejection_student_at_teacher_portal_403(self):
+        """Student attempting to authenticate via the Teacher Portal must be rejected with 403."""
+        login_handler = self._create_mock_handler(
+            "/api/auth/login",
+            method="POST",
+            body={
+                "email": "alex.rivera@nudgepoint.edu",
+                "password": "StudentPass123!",
+                "expectedRole": "teacher"
+            }
+        )
+        login_handler.do_POST()
+        login_handler.send_response.assert_called_with(403)
+        res = json.loads(login_handler.wfile.getvalue().decode("utf-8"))
+        self.assertIn("error", res)
+        self.assertIn("Student", res["error"])
+        self.assertNotIn("token", res)
+
+    def test_cross_role_login_rejection_teacher_at_student_portal_403(self):
+        """Teacher attempting to authenticate via the Student Portal must be rejected with 403."""
+        login_handler = self._create_mock_handler(
+            "/api/auth/login",
+            method="POST",
+            body={
+                "email": "prof.euler@nudgepoint.edu",
+                "password": "PodiumPass123!",
+                "expectedRole": "student"
+            }
+        )
+        login_handler.do_POST()
+        login_handler.send_response.assert_called_with(403)
+        res = json.loads(login_handler.wfile.getvalue().decode("utf-8"))
+        self.assertIn("error", res)
+        self.assertIn("Instructor", res["error"])
+        self.assertNotIn("token", res)
+
+    def test_matching_role_login_success_200(self):
+        """Teacher at Teacher Portal and Student at Student Portal succeed with 200."""
+        # Teacher at Teacher Portal
+        tch_handler = self._create_mock_handler(
+            "/api/auth/login",
+            method="POST",
+            body={
+                "email": "prof.euler@nudgepoint.edu",
+                "password": "PodiumPass123!",
+                "expectedRole": "teacher"
+            }
+        )
+        tch_handler.do_POST()
+        tch_handler.send_response.assert_called_with(200)
+        tch_res = json.loads(tch_handler.wfile.getvalue().decode("utf-8"))
+        self.assertIn("token", tch_res)
+        self.assertEqual(tch_res["user"]["role"], "teacher")
+
+        # Student at Student Portal
+        stu_handler = self._create_mock_handler(
+            "/api/auth/login",
+            method="POST",
+            body={
+                "email": "alex.rivera@nudgepoint.edu",
+                "password": "StudentPass123!",
+                "expectedRole": "student"
+            }
+        )
+        stu_handler.do_POST()
+        stu_handler.send_response.assert_called_with(200)
+        stu_res = json.loads(stu_handler.wfile.getvalue().decode("utf-8"))
+        self.assertIn("token", stu_res)
+        self.assertEqual(stu_res["user"]["role"], "student")
+
 if __name__ == "__main__":
     unittest.main()
