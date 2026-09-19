@@ -249,6 +249,346 @@ function getOrCreateStudentToken() {
 }
 
 // ----------------------------------------------------------------------------
+// 2B. RBAC AUTHENTICATION & DEMO SWITCHER MODAL
+// ----------------------------------------------------------------------------
+function AuthModal({ isOpen, onClose, onLogin, onSignup, currentUser, onLogout }) {
+  const [activeTab, setActiveTab] = useState('demo'); // 'demo' | 'login' | 'signup'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState('student');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [successNotice, setSuccessNotice] = useState('');
+
+  if (!isOpen) return null;
+
+  const handlePresetSelect = async (presetEmail, presetPass, presetName, presetRole) => {
+    setError('');
+    setLoading(true);
+    const res = await onLogin(presetEmail, presetPass);
+    if (!res.success) {
+      // Fallback: register preset if account does not exist
+      const sRes = await onSignup(presetEmail, presetPass, presetName, presetRole);
+      if (!sRes.success) {
+        setError(res.error || sRes.error);
+        setLoading(false);
+        return;
+      }
+    }
+    setLoading(false);
+    onClose();
+  };
+
+  const handleSubmitLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please provide both email and password.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    const res = await onLogin(email, password);
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Authentication failed.');
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSubmitSignup = async (e) => {
+    e.preventDefault();
+    if (!email || !password || !fullName) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    const res = await onSignup(email, password, fullName, role);
+    setLoading(false);
+    if (!res.success) {
+      setError(res.error || 'Registration failed.');
+    } else {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-[#FAF8F4] border border-[#DDD7CB] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 text-gray-400 hover:text-gray-800 text-lg w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200/50 transition"
+          aria-label="Close modal"
+        >
+          ✕
+        </button>
+
+        {/* Modal Eyebrow & Title */}
+        <div className="mb-6">
+          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#7A7E89] block mb-1">
+            ROLE-BASED ACCESS CONTROL (RBAC)
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl text-[#111215] font-normal">
+            Identity & Authentication
+          </h2>
+          <p className="text-xs text-[#575B66] mt-1">
+            Switch between authenticated Teacher and Student profiles with verified data isolation.
+          </p>
+        </div>
+
+        {/* Current User State (if logged in) */}
+        {currentUser && (
+          <div className="mb-6 p-4 rounded-2xl bg-[#F0EDE6] border border-[#DDD7CB] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{currentUser.role === 'teacher' ? '🧑‍🏫' : '🧑‍🎓'}</span>
+              <div>
+                <div className="text-xs font-semibold text-[#111215]">
+                  {currentUser.full_name}
+                </div>
+                <div className="text-[11px] font-mono text-[#7A7E89]">
+                  {currentUser.email} • <strong className="uppercase">{currentUser.role}</strong>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                await onLogout();
+                setSuccessNotice('Signed out successfully.');
+                setTimeout(() => setSuccessNotice(''), 2000);
+              }}
+              className="px-3 py-1 text-xs font-mono rounded-full border border-[#B91C1C] text-[#B91C1C] hover:bg-red-50 transition"
+            >
+              Sign Out
+            </button>
+          </div>
+        )}
+
+        {/* Tab Selection */}
+        <div className="flex border-b border-[#DDD7CB] mb-6">
+          {[
+            { id: 'demo', label: '⚡ 1-Click Demo' },
+            { id: 'login', label: 'Sign In' },
+            { id: 'signup', label: 'Create Account' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setError(''); }}
+              className={`pb-2.5 px-4 text-xs font-mono uppercase tracking-wider transition border-b-2 -mb-[1px] ${
+                activeTab === tab.id
+                  ? 'border-[#111215] text-[#111215] font-bold'
+                  : 'border-transparent text-[#7A7E89] hover:text-[#111215]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Error / Success Feedback */}
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-[#FDF1EA] border border-[#EAD1A8] text-xs font-mono text-[#B91C1C]">
+            ⚠️ {error}
+          </div>
+        )}
+        {successNotice && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-mono text-emerald-800">
+            ✓ {successNotice}
+          </div>
+        )}
+
+        {/* TAB 1: 1-CLICK DEMO PRESETS */}
+        {activeTab === 'demo' && (
+          <div className="flex flex-col gap-3">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89] mb-1">
+              Select an official verified role preset:
+            </span>
+
+            {/* Teacher Preset Card */}
+            <button
+              disabled={loading}
+              onClick={() => handlePresetSelect('prof.euler@nudgepoint.edu', 'PodiumPass123!', 'Prof. Leonhard Euler', 'teacher')}
+              className="p-4 rounded-2xl border border-[#DDD7CB] bg-[#F7F4EE] hover:bg-[#F2ECE0] hover:border-[#111215] transition flex items-start gap-4 text-left group"
+            >
+              <span className="text-3xl p-2 rounded-xl bg-[#EDE8E1] group-hover:scale-105 transition">🧑‍🏫</span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-serif text-sm font-semibold text-[#111215]">
+                    Prof. Leonhard Euler
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#111215] text-white font-medium">
+                    TEACHER
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-[#7A7E89] mt-0.5">
+                  prof.euler@nudgepoint.edu
+                </div>
+                <p className="text-[11px] text-[#575B66] mt-1.5 leading-snug">
+                  Classroom owner for Room <strong>CALC</strong>. Unlocks real-time aggregate radar telemetry, cognitive friction breakdown, and pedagogical bridge controls.
+                </p>
+              </div>
+            </button>
+
+            {/* Student Preset Card */}
+            <button
+              disabled={loading}
+              onClick={() => handlePresetSelect('alex.rivera@nudgepoint.edu', 'StudentPass123!', 'Alex Rivera', 'student')}
+              className="p-4 rounded-2xl border border-[#DDD7CB] bg-[#F7F4EE] hover:bg-[#F2ECE0] hover:border-[#111215] transition flex items-start gap-4 text-left group"
+            >
+              <span className="text-3xl p-2 rounded-xl bg-[#EDE8E1] group-hover:scale-105 transition">🧑‍🎓</span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-serif text-sm font-semibold text-[#111215]">
+                    Alex Rivera
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-[#DDD7CB] bg-white text-[#111215] font-medium">
+                    STUDENT
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-[#7A7E89] mt-0.5">
+                  alex.rivera@nudgepoint.edu
+                </div>
+                <p className="text-[11px] text-[#575B66] mt-1.5 leading-snug">
+                  Enrolled student in Room <strong>CALC</strong>. Strict peer isolation guarantees signals are private and peer pulses cannot be observed or tampered with.
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* TAB 2: SIGN IN */}
+        {activeTab === 'login' && (
+          <form onSubmit={handleSubmitLogin} className="flex flex-col gap-4">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@university.edu"
+                className="w-full text-xs font-sans py-2.5 px-3.5 rounded-xl border border-[#DDD7CB] bg-[#FAF8F4] text-[#111215] focus:outline-none focus:border-[#111215]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full text-xs font-sans py-2.5 px-3.5 rounded-xl border border-[#DDD7CB] bg-[#FAF8F4] text-[#111215] focus:outline-none focus:border-[#111215]"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-gallery-pill-black w-full !py-2.5 text-xs font-mono mt-2"
+            >
+              {loading ? 'AUTHENTICATING...' : 'SIGN IN'}
+            </button>
+          </form>
+        )}
+
+        {/* TAB 3: CREATE ACCOUNT */}
+        {activeTab === 'signup' && (
+          <form onSubmit={handleSubmitSignup} className="flex flex-col gap-3">
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g. Dr. Ada Lovelace"
+                className="w-full text-xs font-sans py-2.5 px-3.5 rounded-xl border border-[#DDD7CB] bg-[#FAF8F4] text-[#111215] focus:outline-none focus:border-[#111215]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ada@university.edu"
+                className="w-full text-xs font-sans py-2.5 px-3.5 rounded-xl border border-[#DDD7CB] bg-[#FAF8F4] text-[#111215] focus:outline-none focus:border-[#111215]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                className="w-full text-xs font-sans py-2.5 px-3.5 rounded-xl border border-[#DDD7CB] bg-[#FAF8F4] text-[#111215] focus:outline-none focus:border-[#111215]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7A7E89] block mb-1">
+                Account Role
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole('student')}
+                  className={`py-2 px-3 rounded-xl border text-xs font-mono flex items-center justify-center gap-1.5 transition ${
+                    role === 'student'
+                      ? 'bg-[#111215] text-white border-[#111215]'
+                      : 'bg-[#FAF8F4] text-[#575B66] border-[#DDD7CB] hover:border-[#111215]'
+                  }`}
+                >
+                  <span>🧑‍🎓</span>
+                  <span>Student</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('teacher')}
+                  className={`py-2 px-3 rounded-xl border text-xs font-mono flex items-center justify-center gap-1.5 transition ${
+                    role === 'teacher'
+                      ? 'bg-[#111215] text-white border-[#111215]'
+                      : 'bg-[#FAF8F4] text-[#575B66] border-[#DDD7CB] hover:border-[#111215]'
+                  }`}
+                >
+                  <span>🧑‍🏫</span>
+                  <span>Teacher</span>
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-gallery-pill-black w-full !py-2.5 text-xs font-mono mt-2"
+            >
+              {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT & SIGN IN'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
 // 3. MAIN APPLICATION ROOT
 // ----------------------------------------------------------------------------
 function NudgePointApp() {
@@ -325,19 +665,130 @@ function NudgePointApp() {
     { time: '10:18', topic: '2. Formal Definition of the Derivative', tag: 'Pacing Too Fast' }
   ]);
 
-  // Priority 1 & 3: Multi-device WebSocket Transport and Teacher PIN state
+  // Priority 1 & 3: Multi-device WebSocket Transport and RBAC Auth State
+  const [authToken, setAuthToken] = useState(() => {
+    try { return localStorage.getItem('np_auth_token') || null; } catch (e) { return null; }
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('np_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) { return null; }
+  });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Teacher PIN state (legacy fallback for quick room passkey entry)
   const [teacherPin, setTeacherPin] = useState(() => {
-    // Storage fallback: returns default '8492' if localStorage is blocked (incognito / sandboxed iframe)
     try { return localStorage.getItem('np_teacher_pin') || '8492'; } catch (e) { return '8492'; }
   });
   const [isTeacherAuthenticated, setIsTeacherAuthenticated] = useState(() => {
-    // Storage fallback: returns false if localStorage is blocked
-    try { return !!localStorage.getItem('np_teacher_pin'); } catch (e) { return false; }
+    try {
+      if (localStorage.getItem('np_user')) {
+        const u = JSON.parse(localStorage.getItem('np_user'));
+        if (u && u.role === 'teacher') return true;
+      }
+      return !!localStorage.getItem('np_teacher_pin');
+    } catch (e) { return false; }
   });
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [socketConnected, setSocketConnected] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
+
+  // Authenticate / refresh user session on load
+  useEffect(() => {
+    if (!authToken) return;
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.user) {
+          setCurrentUser(data.user);
+          if (data.user.role === 'teacher') {
+            setIsTeacherAuthenticated(true);
+          }
+          try { localStorage.setItem('np_user', JSON.stringify(data.user)); } catch (e) {}
+        } else {
+          setAuthToken(null);
+          setCurrentUser(null);
+          try {
+            localStorage.removeItem('np_auth_token');
+            localStorage.removeItem('np_user');
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
+  }, [authToken]);
+
+  const loginUser = async (email, password) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      if (data.user.role === 'teacher') {
+        setIsTeacherAuthenticated(true);
+      }
+      try {
+        localStorage.setItem('np_auth_token', data.token);
+        localStorage.setItem('np_user', JSON.stringify(data.user));
+      } catch (e) {}
+      setPinError('');
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const signupUser = async (email, password, fullName, role) => {
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName, role })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      if (data.user.role === 'teacher') {
+        setIsTeacherAuthenticated(true);
+      }
+      try {
+        localStorage.setItem('np_auth_token', data.token);
+        localStorage.setItem('np_user', JSON.stringify(data.user));
+      } catch (e) {}
+      setPinError('');
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const logoutUser = async () => {
+    if (authToken) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+      } catch (e) {}
+    }
+    setAuthToken(null);
+    setCurrentUser(null);
+    setIsTeacherAuthenticated(false);
+    try {
+      localStorage.removeItem('np_auth_token');
+      localStorage.removeItem('np_user');
+      localStorage.removeItem('np_teacher_pin');
+    } catch (e) {}
+  };
 
   const wsRef = useRef(null);
   const channelRef = useRef(null);
@@ -357,12 +808,14 @@ function NudgePointApp() {
         ws.onopen = () => {
           if (!isMounted) return;
           setSocketConnected(true);
+          const effectiveRole = (currentUser && currentUser.role === 'teacher') || activeView === 'podium' ? 'podium' : 'student';
           ws.send(JSON.stringify({
             type: 'JOIN',
             room: roomCode,
-            role: activeView === 'podium' ? 'podium' : 'student',
+            role: effectiveRole,
+            token: authToken,
             pin: teacherPin,
-            studentId: studentToken
+            studentId: currentUser ? currentUser.id : studentToken
           }));
         };
 
@@ -371,17 +824,29 @@ function NudgePointApp() {
           try {
             const msg = JSON.parse(e.data);
             if (msg.type === 'INIT_STATE' && msg.data) {
-              if (Array.isArray(msg.data.pulses)) setPulses(msg.data.pulses);
+              if (Array.isArray(msg.data.pulses)) {
+                setPulses(msg.data.pulses);
+              } else if (msg.data.myPulse) {
+                setPulses([{ ...msg.data.myPulse, isMine: true }]);
+              } else if (currentUser && currentUser.role === 'student') {
+                setPulses([]);
+              }
               if (Array.isArray(msg.data.questions)) setQuestions(msg.data.questions);
               if (Array.isArray(msg.data.interventions)) setInterventions(msg.data.interventions);
               if (msg.data.activeTopic) setActiveTopic(msg.data.activeTopic);
             } else if (msg.type === 'PULSE') {
+              const pData = msg.data;
               setPulses((prev) => {
-                if (prev.some((p) => p.id === msg.data.id)) return prev;
-                return [...prev, msg.data];
+                if (prev.some((p) => p.id === pData.id)) return prev;
+                return [...prev, pData];
               });
             } else if (msg.type === 'RESOLVE') {
-              setPulses((prev) => prev.filter((p) => p.studentId !== msg.data.studentId));
+              if (msg.data && msg.data.studentId) {
+                setPulses((prev) => prev.filter((p) => p.studentId !== msg.data.studentId));
+              } else {
+                const targetId = currentUser ? currentUser.id : studentToken;
+                setPulses((prev) => prev.filter((p) => !p.isMine && p.studentId !== targetId));
+              }
             } else if (msg.type === 'QUESTION') {
               setQuestions((prev) => {
                 if (prev.some((q) => q.id === msg.data.id)) return prev;
@@ -448,18 +913,15 @@ function NudgePointApp() {
       isMounted = false;
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (ws) {
-        // Best-effort socket close on unmount
         try { ws.close(); } catch (e) {}
       }
       if (channelRef.current) {
-        // Best-effort channel close on unmount
         try { channelRef.current.close(); } catch (e) {}
       }
     };
-  }, [roomCode, teacherPin, activeView]);
+  }, [roomCode, teacherPin, activeView, authToken]);
 
   const broadcast = (type, data) => {
-    // 1. WebSocket send to server (multi-device real-time relay)
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       try {
         wsRef.current.send(JSON.stringify({ type, room: roomCode, data }));
@@ -467,44 +929,57 @@ function NudgePointApp() {
         console.warn('[NudgePoint] Failed to send WebSocket frame:', type, e);
       }
     }
-    // 2. BroadcastChannel for instant same-browser reflection
     if (channelRef.current) {
       try {
         channelRef.current.postMessage({ type, data });
-      } catch (e) {
-        // Best-effort local mesh broadcast; ignore if tab channel closed
-      }
+      } catch (e) {}
     }
   };
 
-  const handleVerifyTeacherPin = (e) => {
-    e.preventDefault();
+  const handleVerifyTeacherPin = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const pin = pinInput.trim();
     if (!pin) {
       setPinError('Please enter the 4-digit teacher passkey.');
       return;
     }
-    if (pin === teacherPin || pin === '8492') {
-      try {
-        localStorage.setItem('np_teacher_pin', pin);
-      } catch (err) {
-        // Storage fallback: ignore quota or iframe sandbox restrictions
+    try {
+      const res = await fetch('/api/rooms/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room: roomCode, pin })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.token && data.user) {
+          setAuthToken(data.token);
+          setCurrentUser(data.user);
+          try {
+            localStorage.setItem('np_auth_token', data.token);
+            localStorage.setItem('np_user', JSON.stringify(data.user));
+          } catch (e) {}
+        }
+        try { localStorage.setItem('np_teacher_pin', pin); } catch (e) {}
+        setTeacherPin(pin);
+        setIsTeacherAuthenticated(true);
+        setPinError('');
+      } else {
+        setPinError('Invalid Teacher PIN. (Default Room CALC PIN is 8492)');
       }
-      setTeacherPin(pin);
-      setIsTeacherAuthenticated(true);
-      setPinError('');
-    } else {
-      setPinError('Invalid Teacher PIN. (Default Room CALC PIN is 8492)');
+    } catch (err) {
+      if (pin === teacherPin || pin === '8492') {
+        try { localStorage.setItem('np_teacher_pin', pin); } catch (e) {}
+        setTeacherPin(pin);
+        setIsTeacherAuthenticated(true);
+        setPinError('');
+      } else {
+        setPinError('Invalid Teacher PIN. (Default Room CALC PIN is 8492)');
+      }
     }
   };
 
   const handleLogoutTeacher = () => {
-    try {
-      localStorage.removeItem('np_teacher_pin');
-    } catch (e) {
-      // Storage fallback: ignore sandbox restrictions
-    }
-    setIsTeacherAuthenticated(false);
+    logoutUser();
     setPinInput('');
   };
 
@@ -517,8 +992,9 @@ function NudgePointApp() {
   const activePulses = useMemo(() => pulses.filter((p) => p.timestamp >= windowCutoff), [pulses, windowCutoff]);
 
   const activeStudentPulse = useMemo(() => {
-    return activePulses.find((p) => p.studentId === studentToken) || null;
-  }, [activePulses, studentToken]);
+    const targetId = currentUser ? currentUser.id : studentToken;
+    return activePulses.find((p) => p.studentId === targetId || p.isMine) || null;
+  }, [activePulses, studentToken, currentUser]);
 
   const activeStudentIds = useMemo(() => {
     const s = new Set();
@@ -582,17 +1058,18 @@ function NudgePointApp() {
     acoustic.playTap();
     if (navigator.vibrate) navigator.vibrate([25, 40, 25]);
 
+    const targetId = currentUser ? currentUser.id : studentToken;
     const pulse = {
-      id: 'p_' + Date.now() + '_' + studentToken,
-      studentId: studentToken,
+      id: 'p_' + Date.now() + '_' + targetId,
+      studentId: targetId,
       timestamp: Date.now(),
       tag: tagId,
       topic: activeTopic,
     };
 
     setPulses((prev) => {
-      const filtered = prev.filter((p) => p.studentId !== studentToken);
-      return [...filtered, pulse];
+      const filtered = prev.filter((p) => p.studentId !== targetId && !p.isMine);
+      return [...filtered, { ...pulse, isMine: true }];
     });
     broadcast('PULSE', pulse);
 
@@ -606,8 +1083,9 @@ function NudgePointApp() {
 
   const handleStudentResolve = () => {
     acoustic.playResolve();
-    setPulses((prev) => prev.filter((p) => p.studentId !== studentToken));
-    broadcast('RESOLVE', { studentId: studentToken });
+    const targetId = currentUser ? currentUser.id : studentToken;
+    setPulses((prev) => prev.filter((p) => p.studentId !== targetId && !p.isMine));
+    broadcast('RESOLVE', { studentId: targetId });
   };
 
   const handleDeployBridge = (title) => {
@@ -763,17 +1241,45 @@ function NudgePointApp() {
             ))}
           </nav>
 
-          {/* Right Action Button (Pill) */}
-          <div className="flex items-center gap-3">
+          {/* Right Action Button (Pill) & User Role Status */}
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
               className="gallery-nav-btn hidden sm:inline-flex"
             >
               {soundEnabled ? 'AUDIO: ON' : 'AUDIO: OFF'}
             </button>
-            <div className="rounded-full px-5 py-2 border border-[#CBC4B5] bg-[#F1EDE5] text-[11px] font-mono tracking-[0.18em] uppercase text-[#111215] font-medium shadow-xs whitespace-nowrap shrink-0">
+            <div className="rounded-full px-4 py-2 border border-[#CBC4B5] bg-[#F1EDE5] text-[11px] font-mono tracking-[0.18em] uppercase text-[#111215] font-medium shadow-xs whitespace-nowrap shrink-0">
               ROOM: {roomCode}
             </div>
+
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="rounded-full px-3.5 py-1.5 border border-[#111215] bg-[#111215] text-[#FAF8F4] text-[11px] font-sans font-medium hover:bg-[#383B42] transition flex items-center gap-1.5 shadow-xs shrink-0"
+                  title="Account Settings & Role Switcher"
+                >
+                  <span>{currentUser.role === 'teacher' ? '🧑‍🏫' : '🧑‍🎓'}</span>
+                  <span className="hidden sm:inline font-medium">{currentUser.full_name.split(' ')[0]}</span>
+                  <span className="text-[9px] font-mono uppercase opacity-75">[{currentUser.role}]</span>
+                </button>
+                <button
+                  onClick={logoutUser}
+                  className="text-[10px] font-mono text-[#7A7E89] hover:text-[#111215] underline hidden lg:inline"
+                  title="Sign Out"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="btn-gallery-pill-black !py-1.5 !px-3.5 text-[10px] font-mono tracking-wider shrink-0"
+              >
+                🔑 SIGN IN
+              </button>
+            )}
           </div>
 
         </div>
@@ -906,7 +1412,7 @@ function NudgePointApp() {
                   <h3 className="font-serif text-xl font-normal text-[#111215] mt-0.5">Mobile Zero-Login</h3>
                 </div>
                 <span className="text-[10px] font-mono text-[#7A7E89] px-3 py-1 rounded-full border border-[#DDD7CB] bg-[#F1EDE5]">
-                  {studentToken === 's1' ? 'SEAT E1 • MARCUS CHEN' : 'ANONYMOUS'}
+                  {currentUser ? `🧑‍🎓 ${currentUser.full_name}` : studentToken === 's1' ? 'SEAT E1 • MARCUS CHEN' : 'ANONYMOUS'}
                 </span>
               </div>
 
@@ -918,6 +1424,9 @@ function NudgePointApp() {
                   activeTopic={activeTopic}
                   activeStudentPulse={activeStudentPulse}
                   studentToken={studentToken}
+                  currentUser={currentUser}
+                  onOpenAuth={() => setAuthModalOpen(true)}
+                  onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!')}
                   onSignal={handleStudentSignal}
                   onResolve={handleStudentResolve}
                   questions={questions}
@@ -946,9 +1455,9 @@ function NudgePointApp() {
           </div>
         )}
 
-        {/* VIEW 2: DEDICATED TEACHER PODIUM (Role-Gated with Teacher PIN) */}
+        {/* VIEW 2: DEDICATED TEACHER PODIUM (Role-Gated with RBAC & Teacher PIN) */}
         {activeView === 'podium' && (
-          !isTeacherAuthenticated ? (
+          !((currentUser && currentUser.role === 'teacher') || isTeacherAuthenticated) ? (
             <div className="max-w-md mx-auto w-full py-8">
               <div className="gallery-panel p-8 flex flex-col gap-6 text-center shadow-lg">
                 <div className="w-12 h-12 rounded-full bg-[#111215] text-[#EDE8E1] flex items-center justify-center mx-auto text-xl">
@@ -962,8 +1471,32 @@ function NudgePointApp() {
                     Instructor Verification
                   </h3>
                   <p className="text-xs text-[#575B66] mt-2 leading-relaxed">
-                    Live classroom telemetry and pedagogical bridge controls are reserved for instructors. Please enter the room passkey.
+                    Live classroom telemetry and pedagogical bridge controls are reserved for instructors.
                   </p>
+                </div>
+
+                {/* 1-Click Instant Instructor Sign-in */}
+                <div className="p-4 rounded-2xl bg-[#FAF8F4] border border-[#DDD7CB] flex flex-col gap-2">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#7A7E89]">
+                    ⚡ Verified Room Owner
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => loginUser('prof.euler@nudgepoint.edu', 'PodiumPass123!')}
+                    className="btn-gallery-pill-black w-full !py-2.5 text-xs font-mono flex items-center justify-center gap-2"
+                  >
+                    <span>🧑‍🏫</span>
+                    <span>Sign In as Prof. Euler</span>
+                  </button>
+                  <span className="text-[10px] text-[#7A7E89]">
+                    Owns Room CALC • Full Telemetry Access
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-px bg-[#DDD7CB] flex-1"></div>
+                  <span className="text-[10px] font-mono uppercase text-[#7A7E89]">OR PASSKEY</span>
+                  <div className="h-px bg-[#DDD7CB] flex-1"></div>
                 </div>
 
                 <form onSubmit={handleVerifyTeacherPin} className="flex flex-col gap-4">
@@ -988,19 +1521,28 @@ function NudgePointApp() {
 
                   <button
                     type="submit"
-                    className="btn-gallery-pill-black w-full"
+                    className="btn-gallery-pill-outline w-full"
                   >
-                    AUTHENTICATE PODIUM
+                    AUTHENTICATE WITH PIN
                   </button>
                 </form>
 
-                <button
-                  type="button"
-                  onClick={() => setActiveView('student')}
-                  className="text-xs font-mono text-[#575B66] hover:text-[#111215] underline"
-                >
-                  ← Return to Student View
-                </button>
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="text-xs font-mono text-[#111215] hover:underline"
+                  >
+                    Custom Sign In →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('student')}
+                    className="text-xs font-mono text-[#575B66] hover:text-[#111215] underline"
+                  >
+                    ← Return to Student View
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -1013,6 +1555,10 @@ function NudgePointApp() {
                   <h2 className="font-serif text-3xl font-normal text-[#111215] tracking-tight mt-1">
                     Classroom Comprehension Radar
                   </h2>
+                  <div className="text-xs text-[#575B66] mt-0.5 flex items-center gap-1.5">
+                    <span>Instructor:</span>
+                    <strong className="text-[#111215]">{currentUser ? currentUser.full_name : 'Prof. Leonhard Euler'}</strong>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-[10px] font-mono px-3 py-1 rounded-full border ${
@@ -1021,10 +1567,10 @@ function NudgePointApp() {
                     {socketConnected ? '🟢 Live WebSocket' : '🟠 Local Sync'}
                   </span>
                   <button
-                    onClick={handleLogoutTeacher}
+                    onClick={logoutUser}
                     className="text-[10px] font-mono text-[#7A7E89] hover:text-[#111215] underline"
                   >
-                    Lock 🔒
+                    Sign Out 🔒
                   </button>
                 </div>
               </div>
@@ -1067,6 +1613,9 @@ function NudgePointApp() {
                 activeTopic={activeTopic}
                 activeStudentPulse={activeStudentPulse}
                 studentToken={studentToken}
+                currentUser={currentUser}
+                onOpenAuth={() => setAuthModalOpen(true)}
+                onQuickStudentLogin={() => loginUser('alex.rivera@nudgepoint.edu', 'StudentPass123!')}
                 onSignal={handleStudentSignal}
                 onResolve={handleStudentResolve}
                 questions={questions}
@@ -1107,6 +1656,9 @@ function NudgePointApp() {
             interventions={interventions}
             questions={questions}
             totalStudents={totalStudents}
+            authToken={authToken}
+            currentUser={currentUser}
+            onOpenAuth={() => setAuthModalOpen(true)}
           />
         )}
 
@@ -1328,6 +1880,16 @@ function NudgePointApp() {
       <footer className="relative z-10 border-t border-[#EAE6DF] py-8 px-6 text-center text-xs text-[#7A7E89] font-mono tracking-[0.18em] uppercase">
         NUDGEPOINT &nbsp;—&nbsp; ZERO-LOGIN CLASSROOM PULSE RADAR
       </footer>
+
+      {/* 6. RBAC AUTHENTICATION & DEMO SWITCHER MODAL */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLogin={loginUser}
+        onSignup={signupUser}
+        currentUser={currentUser}
+        onLogout={logoutUser}
+      />
 
     </div>
   );
@@ -1670,6 +2232,9 @@ function GalleryStudentComponent({
   activeTopic,
   activeStudentPulse,
   studentToken,
+  currentUser,
+  onOpenAuth,
+  onQuickStudentLogin,
   onSignal,
   onResolve,
   questions,
@@ -1702,15 +2267,38 @@ function GalleryStudentComponent({
               <span className="text-[9px] font-mono text-[#7A7E89] uppercase tracking-[0.25em]">
                 ROOM {roomCode}
               </span>
-              {studentToken === 's1' && (
+              {currentUser ? (
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                  🧑‍🎓 {currentUser.full_name}
+                </span>
+              ) : studentToken === 's1' ? (
                 <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#FDF1EA] text-[#B25828] border border-[#EAD1A8]">
                   SEAT E1 • SHY
                 </span>
-              )}
+              ) : null}
             </div>
             <div className="font-serif text-sm font-semibold text-[#111215] truncate" title={courseName}>
               {courseName}
             </div>
+            {!currentUser && onQuickStudentLogin && (
+              <div className="mt-1 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={onQuickStudentLogin}
+                  className="text-[10px] font-mono text-[#C4761E] hover:underline"
+                >
+                  ⚡ Join as Alex Rivera
+                </button>
+                <span className="text-[#DDD7CB]">•</span>
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="text-[10px] font-mono text-[#7A7E89] hover:text-[#111215] underline"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
           </div>
           <span className="w-2 h-2 rounded-full bg-[#2B7A4B]"></span>
         </div>
@@ -2002,24 +2590,42 @@ function GalleryAnalyticsComponent({
   interventions,
   questions,
   totalStudents,
+  authToken,
+  currentUser,
+  onOpenAuth,
 }) {
   const [downloaded, setDownloaded] = useState(false);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
-  // Fetch live analytics from the server REST endpoint
+  // Fetch live analytics from the server REST endpoint with RBAC bearer token
   useEffect(() => {
     setAnalyticsLoading(true);
-    fetch(`/api/sessions/${roomCode}/analytics`)
-      .then((r) => r.ok ? r.json() : null)
+    setAuthError(null);
+    const headers = {};
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+    fetch(`/api/sessions/${roomCode}/analytics`, { headers })
+      .then(async (r) => {
+        if (r.status === 401) {
+          setAuthError('Authentication required: Sign in as the room instructor to view historical session analytics.');
+          return null;
+        }
+        if (r.status === 403) {
+          setAuthError('Access Denied: Only the verified instructor who owns this room can view aggregate telemetry and debrief reports.');
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
       .then((data) => {
-        setAnalyticsData(data);
+        if (data) setAnalyticsData(data);
         setAnalyticsLoading(false);
       })
       .catch(() => {
         setAnalyticsLoading(false);
       });
-  }, [roomCode]);
+  }, [roomCode, authToken]);
 
   const total = pulses.length;
   const stepCount = pulses.filter((p) => p.tag === 'step').length;
@@ -2141,6 +2747,32 @@ ${questions.map((q) => `- [${q.upvotes} votes] ${q.text}`).join('\n')}
           </button>
         </div>
       </div>
+
+      {/* RBAC Authorization Guard Notice */}
+      {authError && (
+        <div className="p-6 rounded-2xl bg-[#FAF8F4] border border-[#EAD1A8] text-center max-w-xl mx-auto shadow-sm flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#111215] text-white flex items-center justify-center text-lg">
+            🔒
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7A7E89] block mb-1">
+              TEACHER RBAC RESTRICTION
+            </span>
+            <div className="font-serif text-xl text-[#111215]">
+              Instructor Access Protected
+            </div>
+            <p className="text-xs text-[#575B66] mt-1.5 leading-relaxed max-w-md">
+              {authError}
+            </p>
+          </div>
+          <button
+            onClick={onOpenAuth}
+            className="btn-gallery-pill-black !py-2 !px-5 text-xs font-mono mt-1"
+          >
+            🔑 Sign In as Prof. Euler
+          </button>
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
